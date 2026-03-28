@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trilogy Care — BD Partnership Strategy</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#2C4C79;--teal:#007F7E;--lt-teal:#43C0BE;--lt-blue:#64BCEA;--bg:#0f1117;--card:#181c25;--border:#2a2f3d;--text:#e2e4e9;--text2:#9ca0ab;--red:#e74c3c;--orange:#e67e22;--blue:#3498db;--green:#27ae60;--dk-green:#1a7a42;--grey:#6b7280;--gold:#f1c40f;--tier1:rgba(230,126,34,0.08);--tier2:rgba(39,174,96,0.08);--must:rgba(241,196,15,0.06)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;font-size:14px}
+/* Password Gate */
+#gate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+#gate.hidden{display:none}
+.gate-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:40px;text-align:center;max-width:360px;width:90%}
+.gate-box h2{color:#fff;margin-bottom:4px;font-size:20px}
+.gate-box p{color:var(--text2);font-size:13px;margin-bottom:20px}
+.gate-box input{background:var(--bg);border:1px solid var(--border);color:#fff;padding:10px 16px;border-radius:6px;font-size:16px;width:100%;text-align:center;letter-spacing:8px;margin-bottom:12px}
+.gate-box input:focus{outline:none;border-color:var(--teal)}
+.gate-box button{background:var(--teal);color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:14px;cursor:pointer;width:100%;font-weight:600}
+.gate-box button:hover{background:var(--lt-teal)}
+.gate-box .error{color:var(--red);font-size:12px;margin-top:8px;display:none}
+#app{display:none}
+#app.visible{display:block}
+/* Header */
+.header{background:linear-gradient(135deg,var(--navy),#1a3356);padding:20px 28px;border-bottom:2px solid var(--teal)}
+.header h1{font-size:22px;font-weight:700;color:#fff}
+.header .sub{color:var(--lt-blue);font-size:13px;margin-top:2px}
+.container{max-width:1600px;margin:0 auto;padding:0 16px 40px}
+/* Strategy */
+.strategy-toggle{background:var(--card);border:1px solid var(--border);border-radius:8px;margin:16px 0;overflow:hidden}
+.strategy-toggle summary{padding:14px 20px;cursor:pointer;font-weight:600;font-size:15px;color:var(--lt-teal);list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+.strategy-toggle summary::before{content:'▶';font-size:10px;transition:transform .2s}
+.strategy-toggle[open] summary::before{transform:rotate(90deg)}
+.strategy-content{padding:0 24px 24px;max-height:600px;overflow-y:auto}
+.strategy-content h3{color:var(--lt-teal);font-size:15px;margin:18px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.strategy-content h3:first-child{margin-top:4px}
+.phase-label{display:inline-block;background:var(--teal);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;margin-bottom:6px}
+.strategy-content ol{padding-left:0;list-style:none;counter-reset:s}
+.strategy-content ol li{counter-increment:s;padding:8px 0 8px 32px;position:relative;border-bottom:1px solid rgba(42,47,61,0.5);font-size:13px;color:var(--text2)}
+.strategy-content ol li::before{content:counter(s);position:absolute;left:0;top:8px;width:22px;height:22px;background:var(--navy);color:var(--lt-blue);border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.strategy-content ol li strong{color:var(--text)}
+.key-principle{background:rgba(0,127,126,0.12);border-left:3px solid var(--teal);padding:10px 14px;border-radius:0 6px 6px 0;margin-top:14px;font-size:13px;color:var(--lt-teal)}
+/* Must Contact Banner */
+.must-banner{background:linear-gradient(90deg,rgba(241,196,15,0.1),rgba(241,196,15,0.02));border:1px solid rgba(241,196,15,0.3);border-radius:8px;padding:12px 18px;margin:12px 0;display:flex;align-items:center;gap:10px;cursor:pointer}
+.must-banner:hover{border-color:var(--gold)}
+.must-banner .star{font-size:20px}
+.must-banner .must-text{font-size:13px;color:var(--gold)}
+.must-banner .must-text strong{color:#fff}
+.must-banner .must-count{margin-left:auto;background:rgba(241,196,15,0.2);color:var(--gold);padding:4px 12px;border-radius:20px;font-weight:700;font-size:14px}
+/* Filters */
+.filters{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:12px 0;display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.filter-group{display:flex;flex-direction:column;gap:3px}
+.filter-group label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:0.5px}
+.filter-group select,.filter-group input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:5px;font-size:13px;min-width:130px}
+.filter-group input[type=text]{min-width:180px}
+.filter-group select:focus,.filter-group input:focus{outline:none;border-color:var(--teal)}
+.filter-reset{background:transparent;border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:5px;cursor:pointer;font-size:12px;height:32px}
+.filter-reset:hover{border-color:var(--teal);color:var(--lt-teal)}
+/* Stats */
+.stats{display:flex;gap:10px;margin:10px 0;flex-wrap:wrap}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;min-width:100px;flex:1}
+.stat .num{font-size:24px;font-weight:700;color:#fff}
+.stat .lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px}
+.stat.hl .num{color:var(--lt-teal)}
+.stat.warn .num{color:var(--red)}
+.stat.gold .num{color:var(--gold)}
+/* Table */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{position:sticky;top:0;z-index:2}
+th{background:var(--navy);color:#fff;padding:10px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{background:#35587f}
+td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr.tier1{background:var(--tier1)}
+tr.tier2{background:var(--tier2)}
+tr.must-row{background:var(--must) !important;border-left:3px solid var(--gold)}
+tr:hover{background:rgba(67,192,190,0.06) !important}
+td.org{font-weight:600;color:#fff;min-width:180px}
+td.org .must-star{color:var(--gold);margin-right:4px;font-size:12px}
+td.org .must-label{display:inline-block;background:rgba(241,196,15,0.2);color:var(--gold);font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:middle}
+td.why{max-width:300px;color:var(--text2);font-size:12px}
+td.why .trunc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+td.why .trunc.exp{-webkit-line-clamp:unset}
+td.contact{font-size:12px;color:var(--lt-blue);min-width:170px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-vh{background:rgba(231,76,60,0.15);color:var(--red)}
+.b-h{background:rgba(230,126,34,0.15);color:var(--orange)}
+.b-m{background:rgba(52,152,219,0.15);color:var(--blue)}
+.b-l{background:rgba(107,114,128,0.15);color:var(--grey)}
+.b-act{background:rgba(39,174,96,0.15);color:var(--green)}
+.b-new{background:rgba(52,152,219,0.12);color:var(--blue)}
+.b-sign{background:rgba(26,122,66,0.2);color:var(--dk-green)}
+.b-lost{background:rgba(231,76,60,0.12);color:var(--red)}
+.b-about{background:rgba(230,126,34,0.12);color:var(--orange)}
+.b-t1{background:rgba(230,126,34,0.12);color:var(--orange);font-size:11px}
+.b-t2{background:rgba(39,174,96,0.12);color:var(--green);font-size:11px}
+.qtr{font-size:12px;font-weight:500;white-space:nowrap}
+.qtr.now{color:var(--red);font-weight:700}
+td.notes{font-size:12px;color:var(--text2);max-width:180px}
+.no-res{text-align:center;padding:40px;color:var(--text2)}
+.count-row{font-size:12px;color:var(--text2);margin:8px 0 4px;display:flex;justify-content:space-between;align-items:center}
+.export-btn{background:var(--teal);color:#fff;border:none;padding:6px 14px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:500}
+.export-btn:hover{background:var(--lt-teal)}
+@media(max-width:768px){.filters{flex-direction:column}.filter-group select,.filter-group input{min-width:100%}.stats{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="gate">
+<div class="gate-box">
+<h2>BD Strategy Explorer</h2>
+<p>Trilogy Care — Confidential</p>
+<input type="password" id="pw" placeholder="••••" maxlength="4" autofocus>
+<button onclick="checkPw()">Enter</button>
+<div class="error" id="pwErr">Incorrect password</div>
+</div>
+</div>
+
+<div id="app">
+<div class="header">
+<h1>BD Partnership Strategy Explorer</h1>
+<div class="sub">Trilogy Care — 100+ Key Prospects across 30 Verticals | Top 3 per Vertical = MUST CONTACT | March 2026</div>
+</div>
+<div class="container">
+
+<!-- Strategy Panel -->
+<details class="strategy-toggle">
+<summary>Partnership Strategy — Who to Contact First</summary>
+<div class="strategy-content">
+<h3><span class="phase-label">PHASE 1</span> IMMEDIATE — Now to June 2026</h3>
+<ol>
+<li><strong>APIA / Suncorp</strong> — Nick has a contact. 700K customers ALL 50+. Group = 9M. <em style="color:var(--red)">WARMEST LEAD.</em></li>
+<li><strong>Community Pharmacy</strong> — About to sign. 1,000 pharmacist target by FY27. First-mover. Also Pharmacy Guild + DBG Health/IPA.</li>
+<li><strong>NDIS Pipeline</strong> — Luke driving. Future Focus, Anchor Point, McLean Care, Jubilee Care, AEON. 474 in CRM.</li>
+<li><strong>Medibank Private</strong> — #1 insurance. Owns HSS + Amplar + 166 GP clinics. One deal = 3 verticals. Contact: <em style="color:var(--lt-blue)">Sonja Sparavec</em>.</li>
+<li><strong>Ramsay Health Care</strong> — 72 hospitals. Discharge = #1 aged care trigger. Sydney/Brisbane/Adelaide/Perth WIDE OPEN.</li>
+</ol>
+<h3><span class="phase-label">PHASE 2</span> Q1 FY27 — Jul to Sep 2026</h3>
+<ol start="6">
+<li><strong>Bupa</strong> — 4M insurance + 59 aged care homes + 33 GP clinics. Glenn McPhee (Dir Govt Partnerships).</li>
+<li><strong>HCF</strong> — 1.9M members. NO aged care. They NEED a partner.</li>
+<li><strong>NIB / Honeysuckle</strong> — White-labels for Qantas, Apia, Suncorp, ING, Priceline.</li>
+<li><strong>RACQ</strong> — 1.7M members, QLD home turf. Then NRMA (2.8M), RACV (2.1M).</li>
+<li><strong>IPN / Sonic</strong> — 160+ practices, 2,000+ GPs. No aged care program = white space.</li>
+<li><strong>13SICK</strong> — 4,000 subscribing practices, $194M revenue. Already visits aged care residents.</li>
+<li><strong>RACGP</strong> — 43,000+ members. CPD endorsement = entire GP profession.</li>
+<li><strong>HCPA</strong> — DEEPEN. 74% conversion. Also Ageing Australia + COTA.</li>
+<li><strong>Priority PHNs</strong> — Sydney, Hunter, Brisbane N/S, Gold Coast, Sunshine Coast.</li>
+<li><strong>Retirement Living</strong> — Keyton, Aveo/Scape, Levande. 75+ villages each.</li>
+</ol>
+<h3><span class="phase-label">PHASE 3</span> Q2 FY27 — Oct to Dec 2026</h3>
+<ol start="16">
+<li><strong>Aged Care Steps + CareAbout</strong> — Financial adviser channel. 2,000+ advisers / 120K+ families.</li>
+<li><strong>GMHBA</strong> — Already runs care coordination in Geelong. Scale nationally.</li>
+<li><strong>Aware Super</strong> — Most pension accounts of any fund. ~250K pension members.</li>
+<li><strong>Healthia + APA</strong> — Allied health. 200+ clinics / 32,000+ members.</li>
+<li><strong>RSL + NACCHO + FECCA</strong> — Veterans, Indigenous, CALD communities.</li>
+<li><strong>Tunstall + Aidacare</strong> — Equipment. Alarms = aged care entry point.</li>
+</ol>
+<h3><span class="phase-label">PHASE 4</span> H2 FY27 — Jan to Jun 2027</h3>
+<ol start="22">
+<li><strong>NSW Health LHDs</strong> — Hospital discharge. Bolton Clarke not in NSW. First mover.</li>
+<li><strong>Bendigo Bank</strong> — Median customer age 52. Regional/rural overlap.</li>
+<li><strong>Meals on Wheels</strong> — Core SaH service. 78K volunteers.</li>
+<li><strong>Starts at 60 + National Seniors</strong> — 3M+ / 175K+ audience. Media partnerships.</li>
+<li><strong>Telstra Health</strong> — eReferral integration. Enable all other verticals.</li>
+</ol>
+<div class="key-principle"><strong>KEY PRINCIPLE:</strong> Every phase builds on the last. Pharmacy proves the model. Insurance gives scale. Hospitals give urgency. GPs give volume. Everything else compounds.</div>
+</div>
+</details>
+
+<!-- Must Contact Banner -->
+<div class="must-banner" onclick="showMustContact()">
+<span class="star">★</span>
+<span class="must-text"><strong>MUST CONTACT</strong> — Top 3 per vertical. Click to filter.</span>
+<span class="must-count" id="mustCount">0</span>
+</div>
+
+<!-- Filters -->
+<div class="filters">
+<div class="filter-group"><label>Vertical</label><select id="fV"><option value="">All Verticals</option></select></div>
+<div class="filter-group"><label>Tier</label><select id="fT"><option value="">All</option><option value="TIER 1">TIER 1 — Nick</option><option value="TIER 2">TIER 2 — BD Team</option></select></div>
+<div class="filter-group"><label>Priority</label><select id="fP"><option value="">All</option><option value="MUST CONTACT">★ MUST CONTACT</option><option value="VERY HIGH">VERY HIGH</option><option value="HIGH">HIGH</option><option value="MEDIUM">MEDIUM</option><option value="LOW">LOW</option></select></div>
+<div class="filter-group"><label>Status</label><select id="fS"><option value="">All</option><option value="Active">Active</option><option value="New">New</option><option value="About to sign">About to sign</option></select></div>
+<div class="filter-group"><label>Quarter</label><select id="fQ"><option value="">All</option><option value="NOW">NOW</option><option value="Q4 FY26">Q4 FY26</option><option value="Q1 FY27">Q1 FY27</option><option value="Q2 FY27">Q2 FY27</option><option value="Q3 FY27">Q3 FY27</option></select></div>
+<div class="filter-group"><label>Search</label><input type="text" id="fX" placeholder="Search..."></div>
+<button class="filter-reset" onclick="resetF()">Reset</button>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+<div class="stat hl"><div class="num" id="sT">0</div><div class="lbl">Total</div></div>
+<div class="stat gold"><div class="num" id="sM">0</div><div class="lbl">Must Contact</div></div>
+<div class="stat"><div class="num" id="s1">0</div><div class="lbl">Tier 1 (Nick)</div></div>
+<div class="stat"><div class="num" id="s2">0</div><div class="lbl">Tier 2 (BD)</div></div>
+<div class="stat warn"><div class="num" id="sVH">0</div><div class="lbl">Very High</div></div>
+<div class="stat"><div class="num" id="sA">0</div><div class="lbl">Active</div></div>
+</div>
+
+<div class="count-row"><span id="rc"></span><button class="export-btn" onclick="csv()">Export CSV</button></div>
+
+<div class="table-wrap">
+<table>
+<thead><tr>
+<th onclick="srt('org')">Organisation ▼</th>
+<th onclick="srt('vertical')">Vertical ▼</th>
+<th onclick="srt('tier')">Tier ▼</th>
+<th onclick="srt('scale')">Scale</th>
+<th>Why They Matter</th>
+<th>Key Contact</th>
+<th onclick="srt('priority')">Priority ▼</th>
+<th onclick="srt('quarter')">Quarter ▼</th>
+<th onclick="srt('status')">Status ▼</th>
+<th>Notes</th>
+</tr></thead>
+<tbody id="tb"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<script>
+// Password
+function checkPw(){const p=document.getElementById('pw').value;if(p==='7777'){document.getElementById('gate').classList.add('hidden');document.getElementById('app').classList.add('visible');localStorage.setItem('bd_auth','1')}else{document.getElementById('pwErr').style.display='block';document.getElementById('pw').value=''}}
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')checkPw()});
+if(localStorage.getItem('bd_auth')==='1'){document.getElementById('gate').classList.add('hidden');document.getElementById('app').classList.add('visible')}
+
+// Data: [vertical, tier, org, scale, why, contact, priority, status, quarter, notes]
+const D=[
+["Pharmacy","TIER 1","Chemist Warehouse Group","600+ pharmacies","Largest AU chain. Even 10% participation = 60 pharmacies referring.","CEO-level (Mario Tascone / Jack Gance)","HIGH","About to sign","Q4 FY26","Partnership in progress"],
+["Pharmacy","TIER 1","Pharmacy Guild of Australia","Peak body — ALL pharmacies","Guild endorsement = access to every community pharmacy in Australia. CPD partnership.","National President / CEO","VERY HIGH","New","Q4 FY26","Endorsement / CPD"],
+["Pharmacy","TIER 1","DBG Health (IPA + Arrotex)","$2B+ revenue, largest AU-owned pharma","IPA buying group = channel to ALL independent pharmacies nationally.","CEO / IPA leadership","HIGH","New","Q4 FY26","IPA = independent pharmacy access"],
+["Pharmacy","TIER 1","API / Priceline Pharmacy (Wesfarmers)","470+ Priceline, 130+ Soul Pattinson","Priceline Sister Club 8M+ members, huge 60+ demo","Wesfarmers Health division","HIGH","New","Q4 FY26",""],
+["Pharmacy","TIER 1","TerryWhite Chemmart (EBOS)","500+ pharmacies","Premium, health-services-focused. MedsCheck, HMR, diabetes programs.","EBOS Health Services partnerships","HIGH","New","Q4 FY26",""],
+["Pharmacy","TIER 1","Sigma Healthcare / Chemist King","~1,200 pharmacies","Group-level partnership = instant national footprint","Corporate partnerships","HIGH","New","Q4 FY26",""],
+["Pharmacy","TIER 1","PSA (Pharmaceutical Society)","Professional body","CPD — train pharmacists to identify aged care needs","CEO / Education","HIGH","New","Q4 FY26","CPD pathway"],
+["Pharmacy","TIER 1","Ramsay Pharmacy","60+ in-hospital","Hospital discharge — pharmacy IN the hospital","Ramsay Health Care corporate","MEDIUM","New","Q4 FY26","Bundle with hospital"],
+["Pharmacy","TIER 1","National Pharmacies","45+ (SA/VIC)","Community pharmacy, older member demo","CEO / Board","MEDIUM","New","Q4 FY26",""],
+["Pharmacy","TIER 2","Amcal+ / Blooms / DDS / PharmX","Various","Mid-tier chains and tech integrations","Head offices / Partnerships","MEDIUM","New","Q1 FY27","Batch approach"],
+["Health Insurance","TIER 1","Medibank Private","4.2M members","DEEP. Owns HSS (100K care/yr), Amplar Health ($31.2M trial), 166+ GP clinics. Over-75s Concierge.","Sonja Sparavec — Head Corp Vol Health Partnerships","VERY HIGH","New","Q4 FY26","#1 PRIORITY. One deal = insurance + GPs + home care."],
+["Health Insurance","TIER 1","Bupa Australia","4.0M members, 59 aged care homes","Insurance/aged care disconnect. 33 GP clinics (targeting 130).","Glenn McPhee — Dir of Government Partnerships","VERY HIGH","New","Q1 FY27","Bridge insurance ↔ aged care"],
+["Health Insurance","TIER 1","HCF","1.9M members","NO aged care infrastructure. Care at Home via Ramsay. Largest NFP. They NEED a partner.","CEO / Head of Health Partnerships","VERY HIGH","New","Q1 FY27","TC fills gap"],
+["Health Insurance","TIER 1","NIB Health Funds","1.8M members, $3.5B revenue","Honeysuckle Health. White-labels for Qantas, Apia, Suncorp, ING, Priceline.","Honeysuckle Health GM","VERY HIGH","New","Q1 FY27","One deal = 5+ member bases"],
+["Health Insurance","TIER 1","Australian Unity","700K ins + 160K home care","Largest home care provider. 1H26 earnings slashed.","Kelly Bayer Rosmarin / Prue Bowden","HIGH","New","Q1 FY27","Competitor + Partner"],
+["Health Insurance","TIER 1","GMHBA","300K members","ALREADY runs Care Coordination for over-55s in Geelong.","Head of Health Programs","HIGH","New","Q2 FY27","Scale nationally"],
+["Health Insurance","TIER 1","HBF","1.1M members (WA)","Acquired CUA Health. No aged care partner.","Head of Partnerships","MEDIUM","New","Q1 FY27","WA regional"],
+["Health Insurance","TIER 1","Teachers Health","500K members","Largest industry fund. Members = aged care workforce.","Partnerships","MEDIUM","New","Q2 FY27",""],
+["Health Insurance","TIER 1","Defence Health","350K members","DVA Gold/White Cards. Dual-funding navigation.","Strategic Partnerships","MEDIUM","New","Q2 FY27","DVA niche"],
+["Health Insurance","TIER 1","Westfund","Regional NSW","Piloting care coordination with Marathon Health.","Partnerships","MEDIUM","New","Q2 FY27","Replace Marathon Health"],
+["General Insurance","TIER 1","APIA (Suncorp Group)","700K+ customers, ALL over 50","MOST CONCENTRATED elderly base. Every customer 50+. NICK HAS CONTACT.","Nick's Suncorp contact → APIA brand manager","VERY HIGH","Active","NOW","WARMEST LEAD. Start here."],
+["General Insurance","TIER 1","Suncorp Group (AAMI, GIO)","9M+ total, est. 1.5-2M aged 60+","AAMI 2.5M+, GIO major NSW. ~27% AU market.","Nick's Suncorp contact → Group Partnerships","HIGH","Active","Q4 FY26","Expand after APIA"],
+["General Insurance","TIER 1","IAG (NRMA, CGU, SGIO)","6.3M customers, NRMA 2.8M","Largest GI insurer ~29% share. Massive elderly membership.","IAG Corporate / NRMA Member Partnerships","HIGH","New","Q1 FY27","NRMA Aged Care Navigation"],
+["General Insurance","TIER 1","Australian Seniors Insurance","Est. 200-400K, all 50+","Greenstone (CDPQ 44%, Ontario Teachers' 33.4%). Multiple brands.","CEO / Partnerships — Greenstone","HIGH","New","Q1 FY27",""],
+["Hospitals","TIER 1","Ramsay Health Care","72 AU hospitals","Largest private. Ramsay Pharmacy in-hospital. Ramsay Connect.","CEO / Chief Strategy Officer","VERY HIGH","New","Q4 FY26","Discharge = #1 aged care trigger"],
+["Hospitals","TIER 1","NSW Health (15 LHDs)","230+ hospitals","Bolton Clarke NOT in NSW. First mover. Target Sydney, Hunter, W Sydney.","LHD General Managers","VERY HIGH","New","Q4 FY26","FIRST MOVER IN NSW"],
+["Hospitals","TIER 1","QLD Health (16 HHSs)","All QLD hospitals","TC home turf. Metro South, Metro North, Gold Coast.","HHS Chief Executives","HIGH","New","Q1 FY27","Brisbane advantage"],
+["Hospitals","TIER 1","Healthscope","38 hospitals","#2 private. In receivership ($1.6B debt). Transition gaps.","Receivers (McGrathNicol / KordaMentha)","HIGH","New","Q4 FY26","Receivership = TC opportunity"],
+["Hospitals","TIER 1","St Vincent's Health","10+ hospitals + aged care","165+ years. Catholic, mission-driven.","CEO / Mission Integration","HIGH","New","Q1 FY27","Values-aligned"],
+["Hospitals","TIER 1","Epworth Healthcare","8 hospitals (VIC)","Largest NFP VIC private. Specialist rehab → home care.","CEO / Discharge Planning","HIGH","New","Q1 FY27",""],
+["Hospitals","TIER 1","HammondCare","2 hospitals + research","Dementia specialist. Hammond Innovations.","CEO / Research partnerships","HIGH","New","Q1 FY27","Complex/dementia"],
+["Hospitals","TIER 1","VIC Health","90+ public hospitals","Austin, Melbourne Health, Western Health.","Health Service CEOs","HIGH","New","Q1 FY27","Avoid Bolton Clarke territory"],
+["GP Networks","TIER 1","Medibank GP (Myhealth + Better Medical)","166+ clinics, 2,800+","Better Medical has DEDICATED Aged Care GP program. Bundle with insurance.","Bundle with Medibank — Sonja Sparavec","VERY HIGH","New","Q4 FY26","ONE deal = insurance + 166 GPs + Amplar"],
+["GP Networks","TIER 1","IPN / Sonic Healthcare","160+ practices, 2,000+ GPs","Largest GP network. 10M+ consultations/yr. No aged care program.","New Sonic CEO Dr Jim Newcombe","VERY HIGH","New","Q1 FY27","Propose aged care referral program"],
+["GP Networks","TIER 1","13SICK (National Home Doctor)","4,000 practices, 700+ docs, $194M","LARGEST after-hours home GP. ALREADY visits aged care residents.","Stuart Tait (CEO), Paul Mirabelle (Board)","VERY HIGH","New","Q1 FY27","Central deal = 4,000 practices"],
+["GP Networks","TIER 1","RACGP","43,000+ GP members","Peak body. CPD — aged care referral training.","CEO / Education","VERY HIGH","New","Q1 FY27","CPD = 43K GPs"],
+["GP Networks","TIER 1","ForHealth Group","85 centres, 3,500+","#3 GP. BGH Capital — may sell for ~$1B.","Andrew Cohen (CEO)","HIGH","New","Q1 FY27","Sale = fresh window"],
+["GP Networks","TIER 1","Ochre Health","65 practices","Rural/regional. Co-located with RACFs.","Dermot Roche (CEO)","HIGH","New","Q1 FY27","Rural aged care overlap"],
+["GP Networks","TIER 1","24-7 MedCare","Hundreds of aged care facilities","Dedicated onsite aged care GPs 7/365.","139 247","HIGH","New","Q1 FY27","Partner or intel"],
+["GP Networks","TIER 1","ACRRM","5,000+ rural GPs","Rural GPs, thin markets.","Education / Partnerships","HIGH","New","Q1 FY27","Rural CPD"],
+["GP Networks","TIER 1","Best Practice / Medical Director","GP practice software","Embed TC referral button in GP software.","Product Partnerships","HIGH","New","Q1 FY27","Tech integration"],
+["GP Networks","TIER 2","Doctors & Co / Cornerstone / Partnered Health","35-60+ clinics each","Mid-tier corporate GP groups","Head offices","MEDIUM","New","Q2 FY27",""],
+["PHN","TIER 1","Central & Eastern Sydney PHN","Sydney CBD + East","Large elderly population. Commissions aged care.","CEO / Commissioning","HIGH","New","Q1 FY27",""],
+["PHN","TIER 1","Brisbane North PHN","Brisbane North","TC home turf","CEO","HIGH","New","Q1 FY27","Home turf"],
+["PHN","TIER 1","Gold Coast PHN","Gold Coast","Retirement demographic","CEO","HIGH","New","Q1 FY27",""],
+["PHN","TIER 2","Remaining 28 PHNs","National","All other PHNs — batch approach","Commissioning teams","MEDIUM","New","Q2 FY27","Batch"],
+["NDIS","TIER 1","Future Focus SC","One of 2 largest nationally","Luke's primary target — meeting held","Luke Traini","VERY HIGH","Active","NOW","CEO priority"],
+["NDIS","TIER 1","Anchor Point","One of 2 largest nationally","Materials presented Feb 2026","Luke Traini","VERY HIGH","Active","NOW",""],
+["NDIS","TIER 1","Centacare (SE QLD)","Closing NDIS, 700 participants","Distressed — acquisition/partnership","CEO / Board","HIGH","New","NOW","Distressed"],
+["NDIS","TIER 1","Annecto","Closing, 3,000+ participants","Distressed — VIC/NSW/QLD/ACT","Board / Administrator","HIGH","New","NOW","Distressed"],
+["NDIS","TIER 1","NDS","Peak body — 1,200+ members","Industry endorsement","CEO / Partnerships","HIGH","New","Q4 FY26",""],
+["NDIS","TIER 1","Carers Queensland","Likely Navigator role holder","If Navigators, need aged care partners","CEO","HIGH","New","Q4 FY26","Strategic"],
+["NDIS","TIER 2","474 providers in CRM","Various","174 MyCareSpace researched","PM team","MEDIUM","Active","NOW",""],
+["Retirement Living","TIER 1","Keyton","75 villages, 17,000+ residents","Largest by village count. Aware Super/APG/Lendlease.","CEO / National Operations","HIGH","New","Q1 FY27",""],
+["Retirement Living","TIER 1","Aveo / Scape","89 villages, 11,000+ residents","Acquired $3.85B. Corporate upheaval = window.","New ownership / Corp Dev","HIGH","New","Q1 FY27",""],
+["Retirement Living","TIER 1","Levande (fka Stockland)","58 villages, 10,000+","Pure-play retirement operator","Corp Dev","HIGH","New","Q1 FY27",""],
+["Retirement Living","TIER 1","Ingenia (ASX: INA)","63 communities, 5,000+","ASX 200, $2B cap. Pipeline 3,244 homes.","Corporate Partnerships","MEDIUM","New","Q2 FY27",""],
+["Retirement Living","TIER 2","NFP operators","50+ villages each","Uniting, Anglicare, BaptistCare, IRT, Whiddon","State CEOs","MEDIUM","New","Q2 FY27","Batch"],
+["Allied Health","TIER 1","Healthia (ASX: HLA)","200+ clinics","Physio, podiatry. ASX-listed.","Corporate Partnerships","HIGH","New","Q1 FY27",""],
+["Allied Health","TIER 1","APA (Physiotherapy)","32,000+ members","Peak body. CPD partnership.","CEO / Education","HIGH","New","Q1 FY27","CPD"],
+["Allied Health","TIER 1","OT Australia","9,000+ members","OT central to aged care.","CEO / Education","HIGH","New","Q1 FY27","CPD"],
+["Allied Health","TIER 2","Zenitas / Vivir / GenPhysio","Various national","Allied health networks","Partnerships","MEDIUM","New","Q2 FY27",""],
+["Financial Planners","TIER 1","Aged Care Steps","2,000+ advisers trained","Trains advisers but doesn't refer to providers. TC fills gap.","CEO / Partnerships","VERY HIGH","New","Q2 FY27",""],
+["Financial Planners","TIER 1","CareAbout","120K+ families helped","Largest marketplace. 70% newly funded = high-intent.","Partnerships","VERY HIGH","New","Q2 FY27","Premium panel partner"],
+["Financial Planners","TIER 1","FPA","12,000+ members","CPD: advise on aged care","CEO / Education","HIGH","New","Q2 FY27",""],
+["Motoring Clubs","TIER 1","RACQ (QLD)","1.7M members","QLD-BASED like TC. Est. 500-700K aged 60+.","CEO / Member Partnerships","VERY HIGH","New","Q1 FY27","HOME TURF"],
+["Motoring Clubs","TIER 1","NRMA (NSW/ACT)","2.8M members","Largest motoring club. Est. 800K-1.2M aged 60+.","CEO / Member Partnerships","VERY HIGH","New","Q1 FY27",""],
+["Motoring Clubs","TIER 1","RACV (VIC)","2.1M members","Known older skew. Est. 700K-1M aged 60+.","CEO / Member Partnerships","VERY HIGH","New","Q1 FY27",""],
+["Motoring Clubs","TIER 1","AAA (peak body)","10M+ members nationally","National deal opens all state clubs","CEO / Partnerships","HIGH","New","Q1 FY27","Top-down approach"],
+["Motoring Clubs","TIER 1","RAC (WA)","1.3M members","WA market. Est. 400-500K aged 60+.","CEO / Member Partnerships","HIGH","New","Q2 FY27",""],
+["Motoring Clubs","TIER 1","RAA (SA)","820K members","SA's largest org. Est. 250-350K aged 60+.","CEO / Member Partnerships","HIGH","New","Q2 FY27",""],
+["Super Funds","TIER 1","Aware Super","1.2M members, $200B, ~250K pension","MOST pension accounts of any fund. $40B retirement.","Head of Retirement","HIGH","New","Q2 FY27","Best super target"],
+["Super Funds","TIER 1","AustralianSuper","3.6M members, $410B+","Largest fund. 239K aged 60-67.","Head of Member Experience","HIGH","New","Q2 FY27",""],
+["Super Funds","TIER 1","Australian Retirement Trust","2.4M members, $330B+","QSuper + Sunsuper. QLD retirees. QLD-based.","Head of Retirement","HIGH","New","Q2 FY27","QLD like TC"],
+["Banking","TIER 1","Bendigo Bank","Median customer age 52","OLDEST bank customer base. 45% older segment. Regional/rural.","Head of Partnerships / Retirement","HIGH","New","Q3 FY27",""],
+["Equipment","TIER 1","Tunstall Healthcare","National alarms / telehealth","Alarm triggers = aged care entry point","Strategic Partnerships","HIGH","New","Q2 FY27",""],
+["Equipment","TIER 1","Aidacare","200+ staff, national","National mobility/equipment. AT-HM scheme.","Corporate Partnerships","MEDIUM","New","Q2 FY27",""],
+["Veterans","TIER 1","RSL Australia","1,000+ sub-branches, 200K+ members","Peak veteran body","National President / CEO","HIGH","New","Q2 FY27",""],
+["Indigenous Health","TIER 1","NACCHO","148 ACCHOs, 550+ sites","National peak body. Eligible from age 50.","CEO / Partnerships","HIGH","New","Q2 FY27",""],
+["CALD","TIER 1","FECCA","National peak body","40% of 65+ born overseas. EnCOMPASS.","CEO / Partnerships","HIGH","New","Q2 FY27",""],
+["Peak Bodies","TIER 1","HCPA","Peak body","EXISTING — 74% conversion. Best channel.","Deepen","VERY HIGH","Active","NOW","DEEPEN"],
+["Peak Bodies","TIER 1","ACCPA / Ageing Australia","Major peak body","Industry endorsement. 99% of LASA + 95% ACSA members.","CEO","VERY HIGH","New","Q1 FY27",""],
+["Peak Bodies","TIER 1","COTA Australia","Consumer peak body","50+ advocacy, all states","CEO","HIGH","New","Q1 FY27",""],
+["Peak Bodies","TIER 1","Dementia Australia","446,500+ with dementia","#1 aged care condition","CEO","HIGH","New","Q1 FY27",""],
+["Media","TIER 1","Starts at 60","3M+ audience","Largest senior consumer media","Partnerships / Advertising","HIGH","New","Q1 FY27",""],
+["Media","TIER 1","Australian Ageing Agenda","Industry media","Primary industry publication","Advertising / Thought leadership","HIGH","New","Q1 FY27",""],
+["Elder Law","TIER 1","Slater & Gordon","70+ offices","National firm, major elder law","Head of Elder Law","MEDIUM","New","Q2 FY27",""],
+["Meal Delivery","TIER 1","Meals on Wheels","78,000 volunteers, 700+ services","Iconic institution. Core SaH service.","National CEO / Board","HIGH","New","Q3 FY27",""],
+["Technology","TIER 1","Telstra Health","Largest AU digital health","Clinical Manager, eReferral, FHIR","Strategic Partnerships","HIGH","New","Q3 FY27",""],
+["Real Estate","TIER 1","Downsizing.com.au","Leading retirement property platform","Direct to target demo. Specialist platform.","Partnerships","MEDIUM","New","Q3 FY27",""]
+];
+
+// MUST CONTACT: Top 3 per vertical (manually curated — the best of the best)
+const MUST_CONTACT = new Set([
+// Pharmacy
+"Pharmacy Guild of Australia","Chemist Warehouse Group","DBG Health (IPA + Arrotex)",
+// Health Insurance
+"Medibank Private","Bupa Australia","HCF",
+// General Insurance
+"APIA (Suncorp Group)","Suncorp Group (AAMI, GIO)","IAG (NRMA, CGU, SGIO)",
+// Hospitals
+"Ramsay Health Care","NSW Health (15 LHDs)","QLD Health (16 HHSs)",
+// GP Networks
+"Medibank GP (Myhealth + Better Medical)","13SICK (National Home Doctor)","IPN / Sonic Healthcare",
+// PHN
+"Central & Eastern Sydney PHN","Brisbane North PHN","Gold Coast PHN",
+// NDIS
+"Future Focus SC","Anchor Point","Centacare (SE QLD)",
+// Retirement Living
+"Keyton","Aveo / Scape","Levande (fka Stockland)",
+// Allied Health
+"Healthia (ASX: HLA)","APA (Physiotherapy)","OT Australia",
+// Financial Planners
+"Aged Care Steps","CareAbout","FPA",
+// Motoring Clubs
+"RACQ (QLD)","NRMA (NSW/ACT)","RACV (VIC)",
+// Super Funds
+"Aware Super","AustralianSuper","Australian Retirement Trust",
+// Peak Bodies
+"HCPA","ACCPA / Ageing Australia","COTA Australia",
+// Single-entry verticals: top 1
+"Bendigo Bank","Tunstall Healthcare","RSL Australia","NACCHO","FECCA","Meals on Wheels","Telstra Health","RACGP","Starts at 60","Slater & Gordon","Downsizing.com.au"
+]);
+
+const V=0,T=1,O=2,S=3,W=4,C=5,P=6,ST=7,Q=8,N=9;
+const PO={"VERY HIGH":0,"HIGH":1,"MEDIUM":2,"LOW":3};
+const QO={"NOW":0,"Q4 FY26":1,"Q1 FY27":2,"Q2 FY27":3,"Q3 FY27":4,"Q4 FY27":5,"FY28":6};
+let sc='priority',sd=1,filtered=D.slice();
+
+function isMust(r){return MUST_CONTACT.has(r[O])}
+
+// Populate verticals
+const vs=[...new Set(D.map(r=>r[V]))].sort();
+const vEl=document.getElementById('fV');
+vs.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;vEl.appendChild(o)});
+document.getElementById('mustCount').textContent=D.filter(isMust).length;
+
+function applyF(){
+  const fv=document.getElementById('fV').value,ft=document.getElementById('fT').value,fp=document.getElementById('fP').value,fs=document.getElementById('fS').value,fq=document.getElementById('fQ').value,fx=document.getElementById('fX').value.toLowerCase();
+  filtered=D.filter(r=>{
+    if(fv&&r[V]!==fv)return false;
+    if(ft&&!r[T].includes(ft))return false;
+    if(fp==='MUST CONTACT'&&!isMust(r))return false;
+    else if(fp&&fp!=='MUST CONTACT'&&r[P]!==fp)return false;
+    if(fs&&r[ST]!==fs)return false;
+    if(fq&&r[Q]!==fq)return false;
+    if(fx&&!r[O].toLowerCase().includes(fx)&&!r[W].toLowerCase().includes(fx)&&!r[V].toLowerCase().includes(fx))return false;
+    return true;
+  });
+  doSort();render();
+}
+
+function doSort(){
+  filtered.sort((a,b)=>{
+    // Must contacts always first
+    const am=isMust(a)?0:1,bm=isMust(b)?0:1;
+    if(am!==bm)return am-bm;
+    let av,bv;
+    if(sc==='priority'){av=PO[a[P]]??9;bv=PO[b[P]]??9}
+    else if(sc==='quarter'){av=QO[a[Q]]??9;bv=QO[b[Q]]??9}
+    else if(sc==='org'){av=a[O].toLowerCase();bv=b[O].toLowerCase();return sd*(av<bv?-1:av>bv?1:0)}
+    else if(sc==='vertical'){av=a[V];bv=b[V];return sd*(av<bv?-1:av>bv?1:0)}
+    else if(sc==='tier'){av=a[T];bv=b[T];return sd*(av<bv?-1:av>bv?1:0)}
+    else if(sc==='status'){av=a[ST];bv=b[ST];return sd*(av<bv?-1:av>bv?1:0)}
+    else{av=0;bv=0}
+    return sd*(av-bv);
+  });
+}
+function srt(c){if(sc===c)sd*=-1;else{sc=c;sd=1}doSort();render()}
+function showMustContact(){document.getElementById('fP').value='MUST CONTACT';applyF()}
+function resetF(){['fV','fT','fP','fS','fQ'].forEach(id=>document.getElementById(id).value='');document.getElementById('fX').value='';applyF()}
+
+function pb(p){return`<span class="badge ${p==='VERY HIGH'?'b-vh':p==='HIGH'?'b-h':p==='MEDIUM'?'b-m':'b-l'}">${p}</span>`}
+function sb(s){return`<span class="badge ${s==='Active'?'b-act':s==='About to sign'?'b-about':s==='Signed'?'b-sign':s==='Lost'?'b-lost':'b-new'}">${s}</span>`}
+
+function render(){
+  const t1=filtered.filter(r=>r[T].includes('1')).length;
+  const t2=filtered.filter(r=>r[T].includes('2')).length;
+  const vh=filtered.filter(r=>r[P]==='VERY HIGH').length;
+  const act=filtered.filter(r=>r[ST]==='Active'||r[ST]==='About to sign').length;
+  const mc=filtered.filter(isMust).length;
+  document.getElementById('sT').textContent=filtered.length;
+  document.getElementById('sM').textContent=mc;
+  document.getElementById('s1').textContent=t1;
+  document.getElementById('s2').textContent=t2;
+  document.getElementById('sVH').textContent=vh;
+  document.getElementById('sA').textContent=act;
+  document.getElementById('rc').textContent=`Showing ${filtered.length} of ${D.length} prospects`;
+  const tb=document.getElementById('tb');
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="10" class="no-res">No prospects match filters</td></tr>';return}
+  let h='';
+  filtered.forEach(r=>{
+    const m=isMust(r);
+    const cls=m?'must-row':r[T].includes('1')?'tier1':'tier2';
+    const star=m?'<span class="must-star">★</span>':'';
+    const ml=m?'<span class="must-label">MUST CONTACT</span>':'';
+    const qc=r[Q]==='NOW'?' now':'';
+    h+=`<tr class="${cls}"><td class="org">${star}${r[O]}${ml}</td><td>${r[V]}</td><td><span class="badge ${r[T].includes('1')?'b-t1':'b-t2'}">${r[T].includes('1')?'TIER 1':'TIER 2'}</span></td><td>${r[S]}</td><td class="why"><div class="trunc" onclick="this.classList.toggle('exp')">${r[W]}</div></td><td class="contact">${r[C]}</td><td>${pb(r[P])}</td><td><span class="qtr${qc}">${r[Q]}</span></td><td>${sb(r[ST])}</td><td class="notes">${r[N]}</td></tr>`;
+  });
+  tb.innerHTML=h;
+}
+
+function csv(){
+  let c='Organisation,Vertical,Tier,Scale,Why,Contact,Priority,Status,Quarter,Notes,Must Contact\n';
+  filtered.forEach(r=>{c+=r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')+','+(isMust(r)?'YES':'NO')+'\n'});
+  const b=new Blob([c],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='TC-BD-Prospects.csv';a.click();
+}
+
+['fV','fT','fP','fS','fQ'].forEach(id=>document.getElementById(id).addEventListener('change',applyF));
+document.getElementById('fX').addEventListener('input',applyF);
+applyF();
+</script>
+</body>
+</html>
