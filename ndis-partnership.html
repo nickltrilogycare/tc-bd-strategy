@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NDIS Partnership Intelligence — Trilogy Care</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1117;--card:#181c25;--card2:#1e222d;--border:#2a2f3d;--border2:#353b4a;--text:#e2e4e9;--text2:#9ca0ab;--text3:#6b7280;--teal:#007F7E;--lt-teal:#43C0BE;--blue:#3498db;--lt-blue:#64BCEA;--navy:#2C4C79;--green:#27ae60;--red:#e74c3c;--orange:#e67e22;--gold:#f1c40f;--purple:#9b59b6;--pink:#e91e8d;--shadow:0 2px 8px rgba(0,0,0,.3)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;font-size:14px}
+a{color:var(--lt-teal);text-decoration:none}a:hover{text-decoration:underline}
+/* Gate */
+#gate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+#gate.hidden{display:none}
+.gate-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:40px;text-align:center;max-width:360px;width:90%}
+.gate-box h2{color:#fff;margin-bottom:4px;font-size:20px}.gate-box p{color:var(--text2);font-size:13px;margin-bottom:20px}
+.gate-box input{background:var(--bg);border:1px solid var(--border);color:#fff;padding:10px 16px;border-radius:6px;font-size:16px;width:100%;text-align:center;letter-spacing:8px;margin-bottom:12px}
+.gate-box input:focus{outline:none;border-color:var(--teal)}
+.gate-box button{background:var(--teal);color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:14px;cursor:pointer;width:100%;font-weight:600}
+.gate-box .error{color:var(--red);font-size:12px;margin-top:8px;display:none}
+#app{display:none}#app.visible{display:block}
+/* Header */
+.header{background:linear-gradient(135deg,var(--navy),#1a3356);padding:20px 28px;border-bottom:2px solid var(--teal);position:sticky;top:0;z-index:100}
+.header h1{font-size:20px;font-weight:700;color:#fff}.header .sub{color:var(--lt-blue);font-size:12px;margin-top:2px}
+.container{max-width:1600px;margin:0 auto;padding:0 16px 60px}
+/* Tabs */
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto;position:sticky;top:62px;z-index:99}
+.tab{padding:12px 20px;background:none;border:none;color:var(--text2);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.2s}
+.tab:hover{color:var(--text)}.tab.active{color:var(--lt-teal);border-bottom-color:var(--teal)}
+.panel{display:none;padding:20px 0}.panel.active{display:block}
+/* Stats Row */
+.stats{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;flex:1;min-width:140px}
+.stat .n{font-size:28px;font-weight:700;color:#fff}.stat .l{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+/* Filter Bar */
+.filters{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap;align-items:center}
+.filter-group{display:flex;gap:4px;flex-wrap:wrap}
+.fbtn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:12px;cursor:pointer;transition:.2s;font-family:inherit}
+.fbtn:hover{border-color:var(--teal);color:var(--text)}.fbtn.active{background:var(--teal);border-color:var(--teal);color:#fff}
+.search{background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:8px;font-size:13px;width:260px;font-family:inherit}
+.search:focus{outline:none;border-color:var(--teal)}
+/* Provider Card */
+.provider-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;transition:.2s}
+.provider-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.pc-head{display:flex;align-items:center;padding:16px 20px;gap:14px;cursor:pointer;user-select:none}
+.pc-tier{width:8px;height:40px;border-radius:4px;flex-shrink:0}
+.tier-large{background:var(--orange)}.tier-mid{background:var(--blue)}.tier-small{background:var(--green)}.tier-distressed{background:var(--red)}
+.pc-info{flex:1;min-width:0}
+.pc-name{font-size:16px;font-weight:600;color:#fff;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pc-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.pc-badges{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:.3px}
+.b-large{background:rgba(230,126,34,.15);color:var(--orange)}.b-mid{background:rgba(52,152,219,.15);color:var(--blue)}
+.b-small{background:rgba(39,174,96,.15);color:var(--green)}.b-distressed{background:rgba(231,76,60,.15);color:var(--red)}
+.b-dual{background:rgba(155,89,182,.15);color:var(--purple)}.b-new-ceo{background:rgba(241,196,15,.15);color:var(--gold)}
+.b-priority{background:rgba(233,30,141,.15);color:var(--pink)}.b-banned{background:rgba(231,76,60,.3);color:var(--red);font-weight:700}
+.pc-arrow{color:var(--text3);font-size:18px;transition:.2s;flex-shrink:0}
+.provider-card.open .pc-arrow{transform:rotate(90deg)}
+.pc-body{display:none;padding:0 20px 20px;border-top:1px solid var(--border)}
+.provider-card.open .pc-body{display:block}
+/* Body Sections */
+.pc-section{margin-top:16px}
+.pc-section h4{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--lt-teal);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.pc-overview{color:var(--text2);font-size:13px;line-height:1.7;margin-top:12px}
+.pc-overview strong{color:var(--text)}
+.why-box{background:rgba(0,127,126,.08);border:1px solid rgba(0,127,126,.2);border-radius:8px;padding:14px 16px;margin-top:12px}
+.why-box p{color:var(--lt-teal);font-size:13px;line-height:1.7}
+/* Contact Table */
+.contact-table{width:100%;border-collapse:collapse;margin-top:8px}
+.contact-table th{text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.contact-table td{padding:8px 10px;font-size:13px;border-bottom:1px solid rgba(42,47,61,.5)}
+.contact-table td:first-child{font-weight:500;color:#fff}
+.contact-table .linkedin-link{display:inline-flex;align-items:center;gap:4px;background:rgba(0,119,181,.12);color:#0077b5;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;transition:.2s}
+.contact-table .linkedin-link:hover{background:rgba(0,119,181,.25);text-decoration:none}
+/* News */
+.news-item{background:var(--card2);border-radius:6px;padding:10px 14px;margin-top:6px;font-size:12px;color:var(--text2);border-left:3px solid var(--gold)}
+.news-item strong{color:var(--text)}
+/* Outreach Section */
+.outreach-card{background:var(--card2);border:1px solid var(--border);border-radius:8px;margin-top:8px;overflow:hidden}
+.outreach-head{padding:12px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--lt-blue);display:flex;align-items:center;gap:8px}
+.outreach-head .day{background:var(--navy);color:var(--lt-blue);font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px}
+.outreach-body{display:none;padding:0 16px 16px;font-size:13px;color:var(--text2);line-height:1.8}
+.outreach-card.open .outreach-body{display:block}
+.template-text{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;margin:8px 0;font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap;position:relative}
+.copy-btn{position:absolute;top:8px;right:8px;background:var(--teal);color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit}
+.copy-btn:hover{background:var(--lt-teal)}
+/* Strategy / Intel Sections */
+.intel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin:16px 0}
+.intel-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;border-left:4px solid var(--teal)}
+.intel-card h4{font-size:14px;font-weight:600;color:var(--lt-teal);margin-bottom:8px}.intel-card p{font-size:13px;color:var(--text2);line-height:1.7}
+.intel-card .stat-highlight{font-size:24px;font-weight:700;color:var(--orange);display:block;margin:4px 0}
+.timeline-table{width:100%;border-collapse:collapse;margin:12px 0}
+.timeline-table th{text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--border)}
+.timeline-table td{padding:10px;font-size:13px;border-bottom:1px solid rgba(42,47,61,.5);color:var(--text2)}
+.timeline-table td:first-child{font-weight:500;color:var(--lt-teal)}
+.timeline-table td strong{color:var(--text)}
+/* Events */
+.event-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
+.event-date{background:var(--navy);border-radius:6px;padding:10px 14px;text-align:center;min-width:70px;flex-shrink:0}
+.event-date .month{font-size:10px;text-transform:uppercase;color:var(--lt-blue);letter-spacing:1px}.event-date .day{font-size:20px;font-weight:700;color:#fff}
+.event-info h4{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px}.event-info p{font-size:12px;color:var(--text2)}
+.event-info .relevance{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-top:6px}
+.rel-high{background:rgba(39,174,96,.15);color:var(--green)}.rel-med{background:rgba(241,196,15,.15);color:var(--gold)}
+/* Network/Association */
+.network-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:10px}
+.network-card h4{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px}
+.network-card .type{font-size:11px;color:var(--lt-teal);font-weight:500;margin-bottom:6px}
+.network-card p{font-size:12px;color:var(--text2);line-height:1.6}
+/* Pillar Cards */
+.pillar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:16px 0}
+.pillar{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;border-top:3px solid var(--teal)}
+.pillar h4{font-size:14px;font-weight:600;color:#fff;margin-bottom:8px}.pillar p{font-size:13px;color:var(--text2);line-height:1.7}
+.pillar .example{background:var(--bg);border-radius:6px;padding:10px 14px;margin-top:10px;font-size:12px;color:var(--text);font-style:italic;line-height:1.6;border-left:3px solid var(--teal)}
+/* Comparison Table */
+.compare-table{width:100%;border-collapse:collapse;margin:12px 0}
+.compare-table th{font-size:12px;color:var(--text3);text-transform:uppercase;padding:10px;border-bottom:1px solid var(--border);text-align:left}
+.compare-table td{padding:10px;font-size:13px;border-bottom:1px solid rgba(42,47,61,.5)}
+.compare-table td:nth-child(2){color:var(--red)}
+.compare-table td:nth-child(3){color:var(--green);font-weight:500}
+/* Responsive */
+@media(max-width:768px){.stats{flex-direction:column}.filters{flex-direction:column}.search{width:100%}.pc-head{flex-direction:column;align-items:flex-start}.pc-badges{margin-top:8px}.intel-grid{grid-template-columns:1fr}.pillar-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="gate">
+<div class="gate-box">
+<h2>🔒 NDIS Intelligence</h2>
+<p>Trilogy Care — Confidential</p>
+<input type="password" id="pw" maxlength="6" placeholder="······" autofocus>
+<button onclick="tryLogin()">Enter</button>
+<div class="error" id="err">Incorrect PIN</div>
+</div>
+</div>
+
+<div id="app">
+<div class="header">
+<h1>NDIS Partnership Intelligence Platform</h1>
+<div class="sub">Trilogy Care — Strategy · Research · Outreach | Confidential — April 2026</div>
+</div>
+
+<div class="tabs" id="tabBar">
+<button class="tab active" data-tab="dashboard">Dashboard</button>
+<button class="tab" data-tab="providers">Provider Database</button>
+<button class="tab" data-tab="outreach">Outreach Playbook</button>
+<button class="tab" data-tab="intel">Market Intel</button>
+<button class="tab" data-tab="events">Events & Networks</button>
+</div>
+
+<div class="container">
+
+<!-- ========== DASHBOARD ========== -->
+<div class="panel active" id="dashboard">
+<div class="stats">
+<div class="stat"><div class="n" style="color:var(--orange)">29</div><div class="l">Large Providers</div></div>
+<div class="stat"><div class="n" style="color:var(--blue)">30</div><div class="l">Mid-Tier</div></div>
+<div class="stat"><div class="n" style="color:var(--green)">25</div><div class="l">Small SC Orgs</div></div>
+<div class="stat"><div class="n" style="color:var(--red)">4</div><div class="l">Distressed/Closing</div></div>
+<div class="stat"><div class="n" style="color:var(--purple)">12</div><div class="l">Dual Sector</div></div>
+<div class="stat"><div class="n" style="color:var(--gold)">8</div><div class="l">New CEO</div></div>
+</div>
+
+<div class="intel-grid">
+<div class="intel-card">
+<h4>🎯 The Opportunity</h4>
+<p>~2,000-3,000 NDIS Support Coordinators nationally. <strong>600+ SC providers closed since July 2024.</strong> Rates frozen 7 years. Navigator model will replace SCs by ~2028. Half have never been approached by an aged care provider.</p>
+</div>
+<div class="intel-card">
+<h4>💰 The Revenue Case</h4>
+<p>NDIS SC: 50hrs × $100.14 = <strong>~$5,000/client/yr</strong> (zero margin after overheads)<br>Aged Care CP: 11% of L4 package = <strong>~$6,800/client/yr</strong> (4-6 hrs effort)<br>50 clients = <strong>$188K-$282K/yr</strong> in coordination fees</p>
+</div>
+<div class="intel-card">
+<h4>🔥 Priority Targets</h4>
+<p><strong>Approach first:</strong> The Benevolent Society (new CEO, dual sector), The Disability Trust (Chief Growth Officer), genU (new CEO, repositioning), Kinder Caring (nurse-led, multi-state), Absolute Care & Health (dual sector, VIC)</p>
+</div>
+<div class="intel-card">
+<h4>📅 Key Dates</h4>
+<p><strong>Mid-2026:</strong> Navigator pilots begin<br><strong>Jul 2026:</strong> NDIS rate review (likely frozen again)<br><strong>Aug 13-14:</strong> DSC Conference, Brisbane (2,000+ SCs)<br><strong>Sep 17-18:</strong> National Disability Summit, Melbourne</p>
+</div>
+</div>
+
+<h3 style="color:var(--lt-teal);margin:24px 0 12px;font-size:16px">🏆 Strategic Priority Matrix — Approach First</h3>
+<table class="timeline-table">
+<thead><tr><th>Provider</th><th>Why Priority</th><th>Key Contact</th><th>Tier</th></tr></thead>
+<tbody>
+<tr><td>The Benevolent Society</td><td>Already does aged care + disability; new CEO Oct 2025; dedicated Ageing division</td><td><strong>Jeremy Halcrow</strong> — ED Disability, Ageing & Carers</td><td><span class="badge b-large">Large</span></td></tr>
+<tr><td>The Disability Trust</td><td>Aggressive acquirer; Chief Growth Officer; Bedford deal; 3,000+ staff</td><td><strong>Robyn Haydon</strong> — Group Chief Growth Officer</td><td><span class="badge b-large">Large</span></td></tr>
+<tr><td>genU</td><td>Dual sector; new CEO Feb 2026; "repositioning" mode; Activ merger</td><td><strong>Dr Chelsea Tobin</strong> — CEO</td><td><span class="badge b-large">Large</span></td></tr>
+<tr><td>Kinder Caring</td><td>Nurse-led, 25+ yrs, dual-sector, multi-state (NSW/VIC/QLD)</td><td><strong>Adam Blake</strong> — CEO</td><td><span class="badge b-mid">Mid</span></td></tr>
+<tr><td>Absolute Care & Health</td><td>10+ yrs, dual NDIS + My Aged Care, CEO from turnaround background</td><td><strong>Barbara Ould</strong> — CEO</td><td><span class="badge b-mid">Mid</span></td></tr>
+<tr><td>Continuity Care Australia</td><td>Dual-sector, QLD-based, Support at Home ready, coordination model</td><td><strong>Suraj Kandel</strong> — Managing Director</td><td><span class="badge b-mid">Mid</span></td></tr>
+<tr><td>Brightwater Care Group</td><td>Primarily aged care doing disability; new CEO; WA market</td><td><strong>Prof Catherine Stoddart</strong> — CEO</td><td><span class="badge b-large">Large</span></td></tr>
+<tr><td>Feros Care</td><td>Primarily aged care doing disability; tech-forward; QLD/NSW</td><td><strong>Karen Crouch</strong> — CEO</td><td><span class="badge b-large">Large</span></td></tr>
+<tr><td>Endeavour Foundation</td><td>New CEO Dec 2025; Home & Community division; QLD</td><td><strong>Leanne Rutherford</strong> — EGM Home & Community</td><td><span class="badge b-large">Large</span></td></tr>
+<tr><td>CoAbility</td><td>~40 SC experts; survived 2024 storm; VIC/national; SC thought leader</td><td><strong>Jenine Ellis</strong> — Founder/Director</td><td><span class="badge b-small">Small SC</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ========== PROVIDER DATABASE ========== -->
+<div class="panel" id="providers">
+<div class="filters">
+<input class="search" type="text" id="providerSearch" placeholder="Search providers, contacts, locations...">
+<div class="filter-group" id="tierFilter">
+<button class="fbtn active" data-filter="all">All</button>
+<button class="fbtn" data-filter="large">Large ($50M+)</button>
+<button class="fbtn" data-filter="mid">Mid-Tier</button>
+<button class="fbtn" data-filter="small">Small SC</button>
+<button class="fbtn" data-filter="distressed">Distressed</button>
+</div>
+<div class="filter-group" id="tagFilter">
+<button class="fbtn" data-tag="dual">Dual Sector</button>
+<button class="fbtn" data-tag="new-ceo">New CEO</button>
+<button class="fbtn" data-tag="priority">Priority</button>
+</div>
+</div>
+<div id="providerList"></div>
+</div>
+
+<!-- ========== OUTREACH PLAYBOOK ========== -->
+<div class="panel" id="outreach">
+<h3 style="color:var(--lt-teal);margin-bottom:16px;font-size:16px">Multi-Level Outreach Sequences</h3>
+<p style="color:var(--text2);font-size:13px;margin-bottom:20px">Three tiers of outreach — each with LinkedIn, email, and phone touchpoints. Multiple senders for Tier 1 to signal organisational seriousness. Copy any template with one click.</p>
+
+<div class="pillar-grid" style="margin-bottom:24px">
+<div class="pillar" style="border-top-color:var(--orange)">
+<h4 style="color:var(--orange)">Tier 1: Large Providers</h4>
+<p>CEO/C-suite level. 28 days, 10 touchpoints, 3 senders (Luke → Nick → Bernie). Surround strategy.</p>
+</div>
+<div class="pillar" style="border-top-color:var(--blue)">
+<h4 style="color:var(--blue)">Tier 2: Mid-Tier</h4>
+<p>Directors/owners. 21 days, 7 touchpoints, BD team leads. Professional but warmer tone.</p>
+</div>
+<div class="pillar" style="border-top-color:var(--green)">
+<h4 style="color:var(--green)">Tier 3: Small SC</h4>
+<p>Owner-operators. 21 days, 6 touchpoints. Empathetic, peer-to-peer. "Secure your future" framing.</p>
+</div>
+</div>
+
+<!-- TIER 1 SEQUENCES -->
+<h3 style="color:var(--orange);margin:24px 0 12px;font-size:15px;border-bottom:1px solid var(--border);padding-bottom:8px">TIER 1 — Large Provider Sequence (CEO-to-CEO)</h3>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 0</span> LinkedIn Connection — Luke Traini (CEO)</div>
+<div class="outreach-body">
+<div class="template-text" id="t1d0">Hi [FIRST NAME], Luke Traini here — CEO of Trilogy Care. I've been watching [COMPANY NAME]'s work in the disability space and wanted to connect. We're exploring how NDIS and aged care providers can strengthen each other. Would be great to have you in my network.<button class="copy-btn" onclick="event.stopPropagation();copyText('t1d0')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 2</span> LinkedIn Connection — Nick Lunn (CMO)</div>
+<div class="outreach-body">
+<div class="template-text" id="t1d2">[FIRST NAME], Nick Lunn from Trilogy Care. Luke mentioned [COMPANY NAME] in a leadership conversation recently — impressive operation you've built. I lead our growth strategy and we're doing some interesting work at the intersection of NDIS and aged care. Happy to share what we're seeing in the market.<button class="copy-btn" onclick="event.stopPropagation();copyText('t1d2')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 3</span> Email #1 — CEO to CEO (Luke → CEO)</div>
+<div class="outreach-body">
+<p style="margin-bottom:8px"><strong>Subject:</strong> [FIRST NAME] — quick note from a fellow CEO</p>
+<div class="template-text" id="t1d3">Hi [FIRST NAME],
+
+I'll keep this brief. I'm Luke Traini, CEO of Trilogy Care — we manage $245M in aged care funding and work with 300+ independent Coordination Partners nationally.
+
+I've been paying close attention to what's happening in the NDIS provider market. Frozen rates, the Navigator model on the horizon, providers being asked to do more with less — I don't need to tell you.
+
+We've started working with a number of NDIS providers who are building an aged care revenue stream alongside their disability work. Not replacing it — complementing it. The coordination skills are identical, the market is growing 28%+, and our percentage model means no hourly rate caps.
+
+I'd welcome 20 minutes of your time — CEO to CEO, no pitch deck — to share what we're hearing and explore whether there's something here for [COMPANY NAME].
+
+Would [SUGGESTED DAY] or [SUGGESTED DAY] work?
+
+Regards,
+Luke Traini
+CEO, Trilogy Care<button class="copy-btn" onclick="event.stopPropagation();copyText('t1d3')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 5</span> LinkedIn Connection — Bernie Ng (GM BD)</div>
+<div class="outreach-body">
+<div class="template-text" id="t1d5">Hi [FIRST NAME], Bernie Ng from Trilogy Care's business development team. Luke and Nick have both mentioned [COMPANY NAME] — I handle the partnership side of things. If there's ever an opportunity to chat about what we're building with NDIS providers, I'd be the one to walk you through the detail. Happy to connect.<button class="copy-btn" onclick="event.stopPropagation();copyText('t1d5')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 8</span> Email #2 — Follow-up with revenue data (Luke)</div>
+<div class="outreach-body">
+<p style="margin-bottom:8px"><strong>Subject:</strong> Re: [FIRST NAME] — quick note from a fellow CEO</p>
+<div class="template-text" id="t1d8">Hi [FIRST NAME],
+
+Following up on my note last week. I know you're busy running a large operation, so I'll add one thing that might be useful context:
+
+We've seen NDIS providers who add aged care coordination generate $188K-$282K in annual coordination fees from just 50 clients — using the same skills their team already has. Aged care clients take 4-6 hours/year versus 24-100+ in NDIS.
+
+No obligation, no pitch deck. Just a conversation between two CEOs navigating the same sector shifts.
+
+Happy to work around your calendar.
+
+Regards,
+Luke Traini<button class="copy-btn" onclick="event.stopPropagation();copyText('t1d8')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 10</span> Phone Call — Bernie Ng</div>
+<div class="outreach-body">
+<p style="margin-bottom:6px"><strong>30-Second Opener:</strong></p>
+<div class="template-text" id="t1d10">"Hi [FIRST NAME], this is Bernie Ng from Trilogy Care. Luke Traini, our CEO, reached out to you recently about a conversation between our organisations. I handle our partnerships with NDIS providers — we work with over 300 Coordination Partners nationally and we've been talking to a number of NDIS providers about what an aged care partnership looks like alongside their disability business. I'm not calling to sell you anything — I'm calling to see if a 20-minute conversation with Luke would be worth your time. Is now an okay moment, or should I find a better time?"<button class="copy-btn" onclick="event.stopPropagation();copyText('t1d10')">Copy</button></div>
+<p style="margin-top:12px;font-size:12px"><strong>If they engage:</strong> "Great. The short version is that NDIS coordination skills translate directly to aged care — it's essentially Level 1 support coordination. Our model means your team would earn on a percentage of funds under management rather than frozen hourly rates. And we provide clients initially to help you get started."</p>
+<p style="margin-top:8px;font-size:12px"><strong>If voicemail:</strong> "Hi [FIRST NAME], Bernie Ng from Trilogy Care. Luke Traini asked me to follow up on an email he sent about NDIS and aged care partnerships. We work with 300+ coordination partners nationally. My number is [NUMBER] if you'd like to chat."</p>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 14</span> Email #3 — Value-Add Industry Intel (Nick Lunn)</div>
+<div class="outreach-body">
+<p style="margin-bottom:8px"><strong>Subject:</strong> NDIS provider data you might find useful</p>
+<div class="template-text" id="t1d14">Hi [FIRST NAME],
+
+Nick Lunn here — I lead growth strategy at Trilogy Care. Luke's been keen to connect with you, and I wanted to share something we've been tracking.
+
+The latest NDS State of the Disability Sector Report makes sobering reading: 81% of providers say they can't deliver services at current prices, and 85% say conditions worsened this year. At the same time, the Support at Home program has created massive demand for aged care coordination — the same skill set your team already has.
+
+We've put together a revenue comparison that maps NDIS SC economics against aged care coordination:
+
+- NDIS SC (Level 2): 50 hrs/yr × $100.14 = ~$5,000/client/year. Zero margin after overheads.
+- Aged Care CP: 11% of Level 4 package = ~$6,800/client/year. Half the time commitment.
+
+I'm happy to share the full analysis. No strings attached — it's useful intel whether you partner with us or not.
+
+Cheers,
+Nick Lunn
+Chief Marketing Officer, Trilogy Care<button class="copy-btn" onclick="event.stopPropagation();copyText('t1d14')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 18</span> Email #4 — Social Proof + Direct Ask (Bernie)</div>
+<div class="outreach-body">
+<p style="margin-bottom:8px"><strong>Subject:</strong> How [SIMILAR PROVIDER TYPE] providers are adding aged care revenue</p>
+<div class="template-text" id="t1d18">Hi [FIRST NAME],
+
+Bernie Ng from Trilogy Care's partnership team. Luke and Nick have both reached out over the past few weeks, and I wanted to add a practical lens.
+
+We're currently onboarding [NUMBER] NDIS providers into our Coordination Partner network. What they consistently tell us:
+
+1. Aged care coordination is simpler than NDIS — it's Level 1 SC
+2. Trilogy handles registration, compliance, and payments
+3. "We didn't expect you to provide clients from day one" — but we do
+
+[COMPANY NAME] has the scale and the coordination capability to make this work. I'd welcome 20 minutes to walk through the model.
+
+Would [DATE] or [DATE] suit?
+
+Regards,
+Bernie Ng
+General Manager, Business Development
+Trilogy Care<button class="copy-btn" onclick="event.stopPropagation();copyText('t1d18')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 24</span> Email #5 — Graceful Close (Luke)</div>
+<div class="outreach-body">
+<p style="margin-bottom:8px"><strong>Subject:</strong> Leaving the door open, [FIRST NAME]</p>
+<div class="template-text" id="t1d24">Hi [FIRST NAME],
+
+My team and I have reached out a few times and I appreciate you're running a large operation with plenty of demands on your time.
+
+I won't keep following up. But I genuinely believe there's a conversation worth having between [COMPANY NAME] and Trilogy Care — particularly as the NDIS landscape continues to shift.
+
+When the timing is right, my door is open. Luke Traini — [PHONE] or just reply to this email.
+
+All the best with [COMPANY NAME].
+
+Luke<button class="copy-btn" onclick="event.stopPropagation();copyText('t1d24')">Copy</button></div>
+</div>
+</div>
+
+<!-- TIER 2 SEQUENCES -->
+<h3 style="color:var(--blue);margin:32px 0 12px;font-size:15px;border-bottom:1px solid var(--border);padding-bottom:8px">TIER 2 — Mid-Tier Provider Sequence (BD Team)</h3>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 0</span> LinkedIn Message — BD Team</div>
+<div class="outreach-body">
+<div class="template-text" id="t2d0">Hi [FIRST NAME], [SENDER NAME] from Trilogy Care. We're Australia's 2nd largest aged care provider and we're working with NDIS coordinators who want to add an aged care revenue stream. Given [COMPANY NAME]'s work in [REGION/SPECIALTY], I thought it'd be worth connecting. Happy to share what's working for other providers who've made the move.<button class="copy-btn" onclick="event.stopPropagation();copyText('t2d0')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 2</span> Email #1 — Introduce Partnership</div>
+<div class="outreach-body">
+<p style="margin-bottom:8px"><strong>Subject:</strong> Aged care partnership for [COMPANY NAME] — worth a look?</p>
+<div class="template-text" id="t2d2">Hi [FIRST NAME],
+
+I'm [SENDER NAME] from Trilogy Care. We manage $245M in aged care funding and work with 300+ independent Coordination Partners across Australia.
+
+I'm reaching out because we've been working with NDIS providers like [COMPANY NAME] who are exploring aged care as a complementary revenue stream. Here's the short version:
+
+- Same skills: Aged care coordination is Level 1 support coordination — same work, lower complexity
+- Better economics: Our CPs earn a percentage of funds under management (no frozen hourly rates, no cap)
+- We carry the compliance: Trilogy holds the registration, handles payments, provides the client pipeline
+- Your NDIS clients have elderly parents: You're one degree of separation from 20+ aged care clients right now
+
+Would a 15-minute call be worth your time this week?
+
+Cheers,
+[SENDER NAME]
+[TITLE] | Trilogy Care<button class="copy-btn" onclick="event.stopPropagation();copyText('t2d2')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 7</span> Email #2 — Revenue Case Study</div>
+<div class="outreach-body">
+<p style="margin-bottom:8px"><strong>Subject:</strong> How an NDIS coordinator added $94K in aged care revenue</p>
+<div class="template-text" id="t2d7">Hi [FIRST NAME],
+
+Quick follow-up. I wanted to share what the numbers look like for NDIS providers who've joined Trilogy's CP network:
+
+The revenue maths:
+- 25 aged care clients at average package value = ~$942K in funds under management
+- Coordination fee at 10-15% = $94K-$141K/year
+- Time commitment: 4-6 hours per client per year (vs 24-100+ hours per NDIS client)
+
+What's included:
+- Trilogy handles registration, compliance, and payments (RCTI — money hits your account monthly)
+- Annual audit = one 45-minute phone call
+- We provide clients initially to get you started
+- Dedicated onboarding and training program
+
+What stays the same:
+- You keep your NDIS business running in parallel
+- You use the same coordination skills you already have
+- You remain independent — this is a partnership, not employment
+
+Worth a conversation?
+
+Cheers,
+[SENDER NAME]<button class="copy-btn" onclick="event.stopPropagation();copyText('t2d7')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 14</span> Email #3 — Event Invitation</div>
+<div class="outreach-body">
+<p style="margin-bottom:8px"><strong>Subject:</strong> [FIRST NAME] — invitation to our NDIS Provider Info Session</p>
+<div class="template-text" id="t2d14">Hi [FIRST NAME],
+
+We're running a [WEBINAR/INFO SESSION] for NDIS providers exploring aged care coordination on [DATE] at [TIME].
+
+What we'll cover:
+- The NDIS-to-aged-care skills translation (why it's Level 1 SC)
+- Revenue comparison: NDIS SC rates vs aged care CP model
+- How Trilogy's 300+ CP network operates day-to-day
+- Q&A with an NDIS coordinator who's made the transition
+
+No commitment, no sales pitch — just practical information for providers weighing their options.
+
+If a group session isn't your style, I'm equally happy to do a private 15-minute walkthrough. Just say the word.
+
+Cheers,
+[SENDER NAME]<button class="copy-btn" onclick="event.stopPropagation();copyText('t2d14')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 21</span> Email #4 — Graceful Close</div>
+<div class="outreach-body">
+<div class="template-text" id="t2d21">Hi [FIRST NAME],
+
+I've reached out a few times and I respect that you've got a business to run. I won't keep emailing.
+
+If the NDIS landscape shifts — or if you're ever curious about what aged care coordination looks like — we're here. Trilogy Care, 300+ coordination partners, growing every month.
+
+Wishing you and the [COMPANY NAME] team all the best.
+
+Cheers,
+[SENDER NAME]<button class="copy-btn" onclick="event.stopPropagation();copyText('t2d21')">Copy</button></div>
+</div>
+</div>
+
+<!-- TIER 3 SEQUENCES -->
+<h3 style="color:var(--green);margin:32px 0 12px;font-size:15px;border-bottom:1px solid var(--border);padding-bottom:8px">TIER 3 — Small SC Owner-Operator Sequence</h3>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 0</span> LinkedIn Message — Empathetic, Peer-to-Peer</div>
+<div class="outreach-body">
+<div class="template-text" id="t3d0">Hi [FIRST NAME], I'm [SENDER NAME] from Trilogy Care. I work with support coordinators across Australia and I wanted to reach out because we're seeing a lot of SCs explore aged care coordination as an additional income stream. Given what's happening with NDIS rates and the Navigator discussion, I thought it might be useful to connect. No agenda — happy to share what we're hearing from the sector.<button class="copy-btn" onclick="event.stopPropagation();copyText('t3d0')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 2</span> Email #1 — Acknowledge Uncertainty, Introduce Opportunity</div>
+<div class="outreach-body">
+<p style="margin-bottom:8px"><strong>Subject:</strong> A question for NDIS coordinators thinking about the future</p>
+<div class="template-text" id="t3d2">Hi [FIRST NAME],
+
+I'm [SENDER NAME] from Trilogy Care. I found [BUSINESS NAME] through the NDIS provider directory and noticed you're doing support coordination in [AREA].
+
+I'm not going to pretend I know exactly what you're dealing with day-to-day. But I do know that frozen rates, shrinking plans, and uncertainty about Navigators are weighing on a lot of coordinators right now.
+
+I'm reaching out because we work with 300+ independent coordination partners in aged care — and many of them came from NDIS backgrounds. What they consistently say is:
+
+- "It's the same coordination work, just simpler"
+- "I wish I'd known about this two years ago"
+- "My aged care clients take a fraction of the time"
+
+If you've ever wondered whether your SC skills could work in aged care — they can. And Trilogy handles the registration, compliance, payments, and even provides clients to get you started.
+
+Would a 10-minute chat be worth your time?
+
+Cheers,
+[SENDER NAME]
+[TITLE] | Trilogy Care<button class="copy-btn" onclick="event.stopPropagation();copyText('t3d2')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 7</span> Email #2 — Revenue Comparison</div>
+<div class="outreach-body">
+<p style="margin-bottom:8px"><strong>Subject:</strong> NDIS vs aged care coordination — the numbers side by side</p>
+<div class="template-text" id="t3d7">Hi [FIRST NAME],
+
+I promised to keep things useful, so here's a straight comparison:
+
+NDIS Support Coordination (your current model):
+- Level 2 rate: $100.14/hr — frozen for 7+ years
+- High-needs client: ~50 hrs/yr = $5,000/year revenue
+- Margin after overheads: approximately zero (if you employ anyone)
+- Hours per client: 24-100+ per year
+
+Aged Care Coordination Partner (Trilogy model):
+- Revenue: % of client's Support at Home package
+- Level 4 client: 11% = ~$6,800/year (more revenue, less time)
+- Hours per client: 4-6 per year
+- No portfolio cap — scales as you grow
+- Rate grows automatically as government funding increases
+
+At scale: 50 aged care clients = $188K-$282K/year in coordination fees. That's 50-100% more than the NDIS SC ceiling — with half the time commitment.
+
+And here's the part that surprises people: your current NDIS clients have elderly parents with aged care packages. You're one conversation away from your first 20 aged care clients.
+
+Worth 10 minutes to talk through?
+
+Cheers,
+[SENDER NAME]<button class="copy-btn" onclick="event.stopPropagation();copyText('t3d7')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 14</span> Email #3 — Webinar Invitation</div>
+<div class="outreach-body">
+<div class="template-text" id="t3d14">Hi [FIRST NAME],
+
+We're hosting a free info session specifically for NDIS support coordinators on [DATE] at [TIME].
+
+What you'll learn:
+- Why aged care coordination is "Level 1 SC" (same skills, simpler)
+- How Trilogy's percentage model works (no hourly caps, no rate freezes)
+- How we provide clients to get you started — including from your existing NDIS network
+- Q&A with coordinators who've already made the move
+
+No commitment. No sales pressure. Just practical information so you can make an informed decision about your future.
+
+If you'd prefer a private 1-on-1 chat instead, just reply and we'll find a time.
+
+Cheers,
+[SENDER NAME]<button class="copy-btn" onclick="event.stopPropagation();copyText('t3d14')">Copy</button></div>
+</div>
+</div>
+
+<div class="outreach-card" onclick="this.classList.toggle('open')">
+<div class="outreach-head"><span class="day">Day 21</span> Graceful Close</div>
+<div class="outreach-body">
+<div class="template-text" id="t3d21">Hi [FIRST NAME],
+
+I know you've got participants to look after and a business to run. I'm not going to keep emailing.
+
+But if things change — if the Navigator announcements land, if plans shrink further, if you're just curious — I'm here. Trilogy Care works with 300+ coordinators nationally and we'd welcome the chance to chat whenever the timing is right.
+
+All the best with [BUSINESS NAME].
+
+[SENDER NAME]<button class="copy-btn" onclick="event.stopPropagation();copyText('t3d21')">Copy</button></div>
+</div>
+</div>
+
+<!-- MESSAGING PILLARS -->
+<h3 style="color:var(--lt-teal);margin:32px 0 12px;font-size:15px;border-bottom:1px solid var(--border);padding-bottom:8px">Key Messaging Pillars</h3>
+<div class="pillar-grid">
+<div class="pillar" style="border-top-color:var(--red)">
+<h4>NDIS Sector Pressure</h4>
+<p>600+ SC closures since Jul 2024. Rates frozen 7 years (25% real-terms cut). 81% can't deliver at current prices. Navigator model replacing SCs by ~2028.</p>
+<div class="example">⚠️ Rule: Never lead with doom. Frame as "secure your future" + "additional revenue stream". Mirror frustration only if they volunteer it first. — Andrew Wallace</div>
+</div>
+<div class="pillar" style="border-top-color:var(--teal)">
+<h4>Trilogy Value Proposition</h4>
+<p>2nd largest provider. $340M govt funding. 300+ CP network. % revenue model (scales, no cap). We carry registration & compliance. 45-min annual phone audit. We provide clients from day one.</p>
+</div>
+<div class="pillar" style="border-top-color:var(--gold)">
+<h4>"Elderly Parents" Angle</h4>
+<p>The single most effective talking point (per Andrew Wallace): "Your NDIS clients have elderly parents — many on aged care packages. You're one conversation away from 20 clients."</p>
+<div class="example">"Quick question — how many of your NDIS participants have elderly parents? Because in our experience, that's where your first 20 aged care clients come from. You already know the family."</div>
+</div>
+<div class="pillar" style="border-top-color:var(--green)">
+<h4>Revenue Comparison</h4>
+<p>NDIS SC: $5K/client (50hrs, zero margin) vs Aged Care CP: $6.8K/client (4-6hrs). 50 clients = $188-282K/yr. Rate grows automatically with govt funding.</p>
+</div>
+<div class="pillar" style="border-top-color:var(--purple)">
+<h4>"We Provide Clients"</h4>
+<p>Removes the #1 barrier to action. Trilogy allocates participants to new CPs. "You won't start from zero." Plus their own NDIS client families (elderly parents) are immediate leads.</p>
+</div>
+</div>
+
+<!-- Revenue Comparison Table -->
+<h3 style="color:var(--lt-teal);margin:24px 0 12px;font-size:15px;border-bottom:1px solid var(--border);padding-bottom:8px">NDIS vs Aged Care — Side by Side</h3>
+<table class="compare-table">
+<thead><tr><th>Metric</th><th>NDIS SC (Current)</th><th>Aged Care CP (Trilogy)</th></tr></thead>
+<tbody>
+<tr><td>Rate model</td><td>$100.14/hr (frozen 7+ yrs)</td><td>% of package (grows with funding)</td></tr>
+<tr><td>Revenue per client</td><td>~$5,000/yr (50 hrs)</td><td>~$6,800/yr (Level 4, 11%)</td></tr>
+<tr><td>Hours per client</td><td>24-100+ hrs/yr</td><td>4-6 hrs/yr</td></tr>
+<tr><td>Margin at Level 2</td><td>~0% after overheads</td><td>Scales with portfolio</td></tr>
+<tr><td>50-client portfolio</td><td>~$120K ceiling (gross)</td><td>$188K-$282K</td></tr>
+<tr><td>Rate increase outlook</td><td>$0 in 7 years</td><td>Automatic with govt funding</td></tr>
+<tr><td>Compliance burden</td><td>Full-day on-site audit</td><td>45-min phone call</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ========== MARKET INTEL ========== -->
+<div class="panel" id="intel">
+<h3 style="color:var(--lt-teal);margin-bottom:16px;font-size:16px">Navigator Model Timeline</h3>
+<table class="timeline-table">
+<thead><tr><th>Phase</th><th>Timeframe</th><th>Status</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td>NDIS Review recommendation</td><td>Oct 2023</td><td>Complete</td><td>Recommended Navigators replace SCs, Specialist SCs, Recovery Coaches, and LACs over 5 years</td></tr>
+<tr><td>Federal Budget: $20M consultation</td><td>2024-25</td><td>Complete</td><td>$20M over 2 years allocated for Navigator consultation and design work</td></tr>
+<tr><td>Quality Supports SC Pilot</td><td>Apr 2025 — Apr 2026</td><td>Running</td><td>$45M program; NDIA working with selected SC providers on quality/cost models</td></tr>
+<tr><td>Navigator Co-Design Working Group</td><td>2024 — ongoing</td><td>Active</td><td>Meeting 9 completed (Oct 2025). Themes: service design, workforce, transition, cultural safety</td></tr>
+<tr><td style="color:var(--gold);font-weight:700">Navigator introduction / pilot</td><td style="color:var(--gold);font-weight:700">Mid-2026 (targeted)</td><td style="color:var(--gold)">Planned</td><td><strong>"Mid-2026 targeted for expansion of new planning framework and introduction of NDIS navigators"</strong> — NDIS co-design meeting 9</td></tr>
+<tr><td>Full rollout</td><td>2026-2028 (estimated)</td><td>Planned</td><td>Gradual rollout. 5-year transition from 2023 = completion ~2028. No confirmed end date for SC.</td></tr>
+</tbody>
+</table>
+<p style="color:var(--text3);font-size:12px;margin-top:8px">Key implication: Navigators will be NDIA-funded (not participant-plan funded). SC business owners face loss of their business model, not just their role. No "grandfathering" announced.</p>
+
+<h3 style="color:var(--lt-teal);margin:32px 0 16px;font-size:16px">Sales Pitch Ammunition — Crisis Data</h3>
+<div class="intel-grid">
+<div class="intel-card" style="border-left-color:var(--red)"><h4>600+ SC Closures</h4><p>Since July 2024. Source: Framing the Narrative, Jul 2025</p><span class="stat-highlight">600+</span></div>
+<div class="intel-card" style="border-left-color:var(--red)"><h4>7-Year Rate Freeze</h4><p>Level 2/3 SC rates frozen since 2019-20. Real-terms cut of 25%+. Source: NDIS Pricing Arrangements</p><span class="stat-highlight">25%+</span><p style="margin-top:4px">real-terms cut</p></div>
+<div class="intel-card" style="border-left-color:var(--orange)"><h4>Providers in the Red</h4><p>Nearly 50% of NDIS providers ended the year in deficit. Source: NDS 2025 Report</p><span class="stat-highlight">~50%</span></div>
+<div class="intel-card" style="border-left-color:var(--orange)"><h4>Can't Deliver at Prices</h4><p>81% of providers say current prices are unsustainable. Source: NDS 2025 Report</p><span class="stat-highlight">81%</span></div>
+<div class="intel-card" style="border-left-color:var(--gold)"><h4>Conditions Worsened</h4><p>85% of organisations say operating conditions worsened this year. Source: NDS 2025</p><span class="stat-highlight">85%</span></div>
+<div class="intel-card" style="border-left-color:var(--gold)"><h4>Zero Margin at L2</h4><p>SC Level 2 has zero margin when employing staff (after overheads, training, registration). Source: Andrew Wallace financial modelling</p><span class="stat-highlight">$0</span></div>
+</div>
+
+<h3 style="color:var(--lt-teal);margin:32px 0 16px;font-size:16px">Sector Consolidation Tracker</h3>
+<table class="timeline-table">
+<thead><tr><th>Event</th><th>Date</th><th>Implications for Trilogy</th></tr></thead>
+<tbody>
+<tr><td>The Disability Trust acquires Bedford Group</td><td>Feb 2026</td><td>TDT now has SA presence + Chief Growth Officer (Robyn Haydon). Primary partnership target.</td></tr>
+<tr><td>LiveBetter merges with Kirinari</td><td>Sep 2025</td><td>~2,700 staff combined. New CEO Diane Lynch. Regional NSW aged care + disability.</td></tr>
+<tr><td>genU merges with Activ Foundation</td><td>Jul 2024</td><td>Top 5 disability provider. New CEO Feb 2026. Dual-sector. "Repositioning."</td></tr>
+<tr><td>Berry Street acquires Yooralla</td><td>Late 2024</td><td>CEO Terry Symonds has aged care background. 30K+ Victorians served.</td></tr>
+<tr><td>Independence Australia acquires Possability</td><td>Sep 2025</td><td>National expansion. Acquisition-hungry CEO Peter Turner.</td></tr>
+<tr><td>nib acquires All Disability Plan Management</td><td>May 2023</td><td>Corporate plan management channel. Martin Adlington, CEO nib Thrive.</td></tr>
+<tr><td>Centacare SE QLD exits NDIS</td><td>Nov 2025</td><td>700 participants displaced. Aged care referral pipeline opportunity.</td></tr>
+<tr><td>Annecto closes after 70 years</td><td>Jul 2025</td><td>4,400+ clients transitioning. Contact McGrathNicol for lists.</td></tr>
+<tr><td>Anglicare WA exits NDIS entirely</td><td>2025</td><td>Regional WA participants need new providers. Four consecutive years of losses.</td></tr>
+<tr><td>MS Society SA enters administration</td><td>Sep 2025</td><td>$2.5M debt. 2-3K people. SA market vacuum.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ========== EVENTS & NETWORKS ========== -->
+<div class="panel" id="events">
+<h3 style="color:var(--lt-teal);margin-bottom:16px;font-size:16px">2026 Conferences & Expos</h3>
+
+<div class="event-card">
+<div class="event-date"><div class="month">AUG</div><div class="day">13-14</div></div>
+<div class="event-info"><h4>DSC Annual NDIS Conference 2026</h4><p>Brisbane Convention Centre + Online | 2,000+ attendees | <a href="https://teamdsc.com.au/conference" target="_blank">teamdsc.com.au</a></p><span class="relevance rel-high">HIGH — SCs are core audience</span></div>
+</div>
+<div class="event-card">
+<div class="event-date"><div class="month">SEP</div><div class="day">17-18</div></div>
+<div class="event-info"><h4>National Disability Summit</h4><p>Crown Promenade, Melbourne | <a href="https://nationaldisabilitysummit.com.au" target="_blank">nationaldisabilitysummit.com.au</a></p><span class="relevance rel-high">HIGH — SC-specific sessions, Navigator transition</span></div>
+</div>
+<div class="event-card">
+<div class="event-date"><div class="month">JUN</div><div class="day">12-13</div></div>
+<div class="event-info"><h4>Sydney Disability Connection Expo</h4><p>ICC Sydney | Free entry | <a href="https://developingauscommunities.com.au" target="_blank">developingauscommunities.com.au</a></p><span class="relevance rel-med">MEDIUM — SC providers exhibit</span></div>
+</div>
+<div class="event-card">
+<div class="event-date"><div class="month">AUG</div><div class="day">14-15</div></div>
+<div class="event-info"><h4>Perth Disability Connection Expo</h4><p>Perth Convention Centre | Free entry</p><span class="relevance rel-med">MEDIUM</span></div>
+</div>
+<div class="event-card">
+<div class="event-date"><div class="month">OCT</div><div class="day">16</div></div>
+<div class="event-info"><h4>Melbourne Disability Connection Expo</h4><p>MCEC, South Wharf | Free entry</p><span class="relevance rel-med">MEDIUM</span></div>
+</div>
+
+<h3 style="color:var(--lt-teal);margin:32px 0 16px;font-size:16px">SC Networks, Associations & Communities</h3>
+
+<div class="network-card">
+<h4>Disability Intermediaries Australia (DIA)</h4>
+<div class="type">Peak body for SC and Plan Management providers</div>
+<p>CEO: <strong>Jess Harper</strong> (<a href="https://www.linkedin.com/in/mrjessharper/" target="_blank">LinkedIn</a>). THE key industry body for SC businesses. Primary advocacy voice on pricing and Navigator transition. Gateway to entire member base. | <a href="https://www.intermediaries.org.au/" target="_blank">intermediaries.org.au</a></p>
+</div>
+<div class="network-card">
+<h4>Team DSC</h4>
+<div class="type">Training / conference / community — 10,000+ trained SCs</div>
+<p>MD: <strong>Evie Naufal</strong>. Australia's largest SC training organisation. Annual conference (2,000+). Sponsorship/partnership = direct access to SC audience. | <a href="https://teamdsc.com.au" target="_blank">teamdsc.com.au</a></p>
+</div>
+<div class="network-card">
+<h4>SC Academy</h4>
+<div class="type">Training + community membership</div>
+<p>Founded by Phillip Laidlaw & Julie Patterson (2015). Runs "Support Coordination Community" membership. | <a href="https://www.scacademy.com.au/" target="_blank">scacademy.com.au</a></p>
+</div>
+<div class="network-card">
+<h4>NDS Support Coordination Network</h4>
+<div class="type">Industry network within National Disability Services</div>
+<p>1,000+ NDS members. SC-specific regional meetings for SCs, team leaders, ops managers. Requires NDS membership. | <a href="https://nds.org.au" target="_blank">nds.org.au</a></p>
+</div>
+<div class="network-card">
+<h4>Facebook Groups</h4>
+<div class="type">Online communities — high SC concentration</div>
+<p><strong>NDIS Support Coordinators (SC) & Plan Managers (PM)</strong> — dedicated private group. <strong>NDIS Discussion Australia</strong> — broad provider + participant community. <strong>NDIS Sole Traders & Independent Providers</strong> — includes sole trader SCs.</p>
+</div>
+<div class="network-card">
+<h4>Astalty</h4>
+<div class="type">SC software platform + community</div>
+<p>SC-specific software with large user base. Newsletter and community. Co-founder: James. | <a href="https://astalty.com.au" target="_blank">astalty.com.au</a></p>
+</div>
+<div class="network-card">
+<h4>Support Sorted</h4>
+<div class="type">Content platform for SCs</div>
+<p>Highly-read SC-focused guides, checklists, and updates. Major content channel reaching SCs. | <a href="https://www.supportsorted.com" target="_blank">supportsorted.com</a></p>
+</div>
+</div>
+
+</div><!-- /container -->
+</div><!-- /app -->
+
+<script>
+// === PASSWORD GATE ===
+function tryLogin(){const p=document.getElementById('pw').value;if(p==='2026'||p==='trilogy'){document.getElementById('gate').classList.add('hidden');document.getElementById('app').classList.add('visible')}else{document.getElementById('err').style.display='block'}}
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin()});
+
+// === TABS ===
+document.querySelectorAll('.tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById(t.dataset.tab).classList.add('active')})});
+
+// === COPY ===
+function copyText(id){const el=document.getElementById(id);const text=el.innerText.replace('Copy','').trim();navigator.clipboard.writeText(text);const btn=el.querySelector('.copy-btn');if(btn){btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)}}
+
+// === PROVIDER DATA ===
+const providers = [
+// LARGE PROVIDERS
+{name:"Life Without Barriers",tier:"large",revenue:"~$863M",staff:"13,000+",states:"National",tags:["dual"],priority:false,newCeo:false,overview:"One of Australia's largest charitable organisations. Supports ~25,000 people annually across disability, aged care, mental health, out-of-home care, and refugee services.",why:"Already operates aged care as an 'Emerging Business' division led by a dedicated Deputy CEO (Brad Swan). National reach. Scale makes them a prime partnership target for Support at Home referral pathways.",contacts:[{role:"CEO",name:"Claire Robbs",linkedin:"https://www.linkedin.com/in/claire-robbs-04650a31/"},{role:"Deputy CE, Emerging Business (Aged Care)",name:"Brad Swan",linkedin:""},{role:"Deputy CE, Disability & Mental Health",name:"Leanne Johnson GAICD",linkedin:"https://www.linkedin.com/in/leanne-johnson-gaicd-7064a4239/"}],news:"Stable leadership — Claire Robbs since 2011. Brad Swan leads aged care expansion."},
+{name:"Aruma",tier:"large",revenue:"~$518.6M",staff:"5,000+",states:"NSW, QLD, VIC, ACT",tags:[],priority:false,newCeo:true,overview:"Formerly House with No Steps. Strong brand in supported living, community participation, and employment services.",why:"New CEO Dr Martin Laverty — architect of the NDIS, former NDIA Board member. Deep government relationships. As participants age, they need aged care pathways.",contacts:[{role:"CEO",name:"Dr Martin Laverty",linkedin:"https://www.linkedin.com/in/martinlaverty/"},{role:"COO",name:"Lylea McMahon",linkedin:""},{role:"Chief Customer Officer",name:"Heidi Clarris",linkedin:""}],news:"Dr Martin Laverty appointed CEO — previously helped design and implement the NDIS."},
+{name:"genU",tier:"large",revenue:"Large (recovery)",staff:"5,500+",states:"VIC, WA, TAS, SA, QLD",tags:["dual","priority"],priority:true,newCeo:true,overview:"Geelong-based disability, employment, training, and aged care provider. Merged with Activ Foundation (WA) Jul 2024, creating one of Australia's top 5 disability providers.",why:"VERY HIGH — Already provides aged care and senior services alongside disability. New CEO Dr Chelsea Tobin (Feb 2026). Organisation explicitly in 'recovery/repositioning' mode. Leadership transition = window of opportunity.",contacts:[{role:"CEO (new, Feb 2026)",name:"Dr Chelsea Tobin",linkedin:""},{role:"COO",name:"Brooke Draper",linkedin:""},{role:"CFO / Chief Corporate Officer",name:"Kelly Marshall",linkedin:""},{role:"Chief Marketing & Comms",name:"Michael van Oudtshoorn",linkedin:""}],news:"CEO Clare Amies stepped down early 2026. Dr Chelsea Tobin commenced Feb 2026. Activ Foundation merger Jul 2024. In 'repositioning' phase."},
+{name:"Scope Australia",tier:"large",revenue:"~$480M",staff:"5,000+",states:"VIC, NSW",tags:[],priority:false,newCeo:true,overview:"One of the largest NFP disability providers, supporting 5,600+ people with complex disabilities across 425+ locations.",why:"New CEO Lisa Evans (Oct 2025) after Kate MacRae retired. Fresh leadership signals openness to new partnerships. Clients with complex disabilities will age into aged care needs.",contacts:[{role:"CEO (new, Oct 2025)",name:"Lisa Evans",linkedin:"https://www.linkedin.com/in/lisa-evans-46626b148/"},{role:"Acting COO",name:"Nicole Standfield",linkedin:""},{role:"Chief Transformation Officer",name:"Amrita Ahluwalia",linkedin:""}],news:"CEO transition Oct 2025. Amrita Ahluwalia joined Apr 2025 as Chief Transformation Officer. Organisation undergoing transformation."},
+{name:"The Benevolent Society",tier:"large",revenue:"~$241.5M",staff:"2,500+",states:"NSW, QLD",tags:["dual","priority"],priority:true,newCeo:true,overview:"Australia's oldest charity (est. 1813). Integrated services across disability, aged care, child/family, and carers.",why:"VERY HIGH — Already provides aged care. Has dedicated 'Disability, Ageing & Carers' division led by Jeremy Halcrow. New CEO Kevin Barrow (Oct 2025) with 20+ years healthcare NFP experience. Perfect alignment.",contacts:[{role:"CEO (new, Oct 2025)",name:"Kevin Barrow",linkedin:""},{role:"ED, Disability, Ageing & Carers",name:"Jeremy Halcrow",linkedin:""},{role:"ED, Finance IT & Corporate Services",name:"Stefan Duvenhage",linkedin:""}],news:"New CEO Kevin Barrow commenced Oct 2025. Jeremy Halcrow moved to lead combined Disability, Ageing & Carers division in 2024."},
+{name:"Endeavour Foundation",tier:"large",revenue:"~$394M",staff:"4,000+",states:"QLD",tags:["priority"],priority:true,newCeo:true,overview:"Australia's largest employer of people with intellectual disability. HQ Brisbane. Supported employment, accommodation, community support.",why:"New CEO Andrew Chesterman (Dec 2025). Has dedicated 'Home & Community' division led by Leanne Rutherford — key partnership contact. QLD base aligns with Trilogy.",contacts:[{role:"CEO (new, Dec 2025)",name:"Andrew Chesterman",linkedin:"https://www.linkedin.com/in/andrew-chesterman-23691b31/"},{role:"EGM Home & Community",name:"Leanne Rutherford",linkedin:""},{role:"CFO",name:"Anthony Cross",linkedin:""}],news:"CEO change Dec 2025 — David Swain departed. New CEO setting strategic direction."},
+{name:"The Disability Trust",tier:"large",revenue:"N/A",staff:"3,000+",states:"NSW, ACT, VIC, QLD, SA",tags:["priority"],priority:true,newCeo:false,overview:"Rapidly growing through M&A — merged with ermha365 (2024) and acquired Bedford Group (Feb 2026). Now one of Australia's largest disability providers.",why:"VERY HIGH — Aggressive growth trajectory. Has a dedicated 'Group Chief Growth Officer' (Robyn Haydon). Bedford acquisition gives them SA presence. They are a consolidator and ideal strategic partner.",contacts:[{role:"Group CEO",name:"Karenza Louis-Smith",linkedin:""},{role:"Group Chief Growth Officer",name:"Robyn Haydon",linkedin:""},{role:"Deputy Group CEO",name:"Mathew McIntyre",linkedin:""},{role:"Group Chief Commercial Officer",name:"Michael Bowers",linkedin:""}],news:"CRITICAL — Bedford acquisition completed Feb 2026. ermha365 merger 2024. Two major acquisitions in 12 months. Robyn Haydon as CGO is the key contact."},
+{name:"Northcott",tier:"large",revenue:"~$216.9M",staff:"3,000+",states:"NSW, ACT",tags:[],priority:false,newCeo:false,overview:"Major NFP disability provider operating from metropolitan and regional locations across NSW and ACT.",why:"Stable, large NSW/ACT presence. GM Strategy & Growth (Paul Harkin) is the partnership contact. As participants age, natural referral opportunity.",contacts:[{role:"CEO",name:"Liz Forsyth",linkedin:""},{role:"GM Strategy & Growth",name:"Paul Harkin",linkedin:""},{role:"COO",name:"Jamie Hodgson",linkedin:""}],news:"Stable leadership under Liz Forsyth since Sep 2020."},
+{name:"Afford",tier:"large",revenue:"~$145.6M",staff:"1,000+",states:"NSW, QLD, SA, VIC",tags:[],priority:false,newCeo:false,overview:"Australian Foundation for Disability, operating since 1951. Employment, skills development, accommodation for 6,200+ people.",why:"CEO Jo Toohey previously led The Benevolent Society and was Head of Operations for UnitingCare Ageing NSW/ACT — deep aged care knowledge makes Afford a warm prospect.",contacts:[{role:"CEO",name:"Jo Toohey",linkedin:""}],news:"Significant transformation under Jo Toohey since 2021."},
+{name:"Minda",tier:"large",revenue:"~$107.2M",staff:"1,500+",states:"SA",tags:["priority"],priority:true,newCeo:false,overview:"SA's largest NFP disability provider, est. 1898. Supported employment, accommodation, day programs, allied health.",why:"HIGH — CEO David Panter came from ECH (aged care provider). His aged care background makes him a natural partnership champion. Has GM Business Development (Antony Sellentin).",contacts:[{role:"CEO",name:"Dr David Panter",linkedin:""},{role:"GM Business Development",name:"Antony Sellentin",linkedin:""},{role:"ED Service Delivery",name:"Karen Fullagar",linkedin:""}],news:"David Panter featured in InDaily (Aug 2025) discussing transformation. Previously led ECH (aged care)."},
+{name:"Feros Care",tier:"large",revenue:"~$80.5-140.7M",staff:"983",states:"QLD, NSW, ACT, SA",tags:["dual","priority"],priority:true,newCeo:false,overview:"QLD/NSW charity providing aged care, allied health, disability, and shared services. Known for innovation in virtual care and technology.",why:"VERY HIGH — Primarily an aged care provider that also does disability. Natural partnership for NDIS-to-aged-care referral pathways. Tech-forward. Already on My Aged Care.",contacts:[{role:"CEO",name:"Karen Crouch",linkedin:""}],news:"Karen Crouch appointed CEO Sep 2021. Stable leadership. Technology-forward approach."},
+{name:"Brightwater Care Group",tier:"large",revenue:"N/A",staff:"1,000+",states:"WA",tags:["dual","priority"],priority:true,newCeo:true,overview:"Leading WA NFP provider of aged care, disability, and retirement services for 120+ years. Specialist in acquired brain injuries and Huntington's disease.",why:"VERY HIGH — Primarily an aged care provider that also does disability (inverse model). New CEO Prof Catherine Stoddart with extensive health system leadership. Board member Prof Etherton-Beer (geriatric medicine) joined Dec 2025.",contacts:[{role:"CEO (new)",name:"Prof Catherine Stoddart PSM",linkedin:""},{role:"COO",name:"Kelly Worlock",linkedin:""},{role:"CFO",name:"David Holden",linkedin:""}],news:"New CEO appointed. Board member Prof Etherton-Beer (geriatric medicine, UWA) joined Dec 2025."},
+{name:"Avivo",tier:"large",revenue:"N/A",staff:"1,100",states:"WA",tags:["dual"],priority:false,newCeo:false,overview:"WA-based provider of aged care, disability, mental health, and carer support. Supports ~3,000 people with 100+ community teams.",why:"VERY HIGH — Already provides both aged care and disability in WA. Natural integrated partner. Small enough to be agile.",contacts:[{role:"CEO",name:"Kate Fulton",linkedin:"https://www.linkedin.com/in/fulton-kate/"}],news:"Kate Fulton stepped into CEO 2022. Notable all-women leadership team. Recruiting two 'Chief Purpose Officers'."},
+{name:"Yooralla / Berry Street",tier:"large",revenue:"~$103.8M",staff:"2,000+",states:"VIC",tags:["dual"],priority:false,newCeo:false,overview:"Yooralla (disability, est. 1918) merged with Berry Street (child & family) late 2024. Supports 30,000+ Victorians.",why:"CEO Terry Symonds has extensive aged care background (Royal Melbourne Hospital, QLD Health). Harvard-trained. His aged care expertise makes this a warm target.",contacts:[{role:"CEO",name:"Terry Symonds",linkedin:""},{role:"ED Disability Services",name:"Melissa Cofre",linkedin:""},{role:"ED Strategy, Technology & Analytics",name:"Dr Jane Daniels",linkedin:""}],news:"Berry Street-Yooralla merger completed late 2024. Terry Symonds appointed CEO."},
+{name:"LiveBetter Community Services",tier:"large",revenue:"~$46.2M",staff:"2,700 (merged)",states:"Regional NSW",tags:["dual","priority"],priority:true,newCeo:true,overview:"Regional care provider focusing on disability, family, and aged care. Merged with Kirinari (Sep 2025) creating a much larger entity.",why:"VERY HIGH — Already provides aged care + disability in regional Australia. Kirinari merger created ~2,700 staff entity. New CEO Diane Lynch. Regional focus aligns with underserved markets.",contacts:[{role:"CEO (new, from Kirinari merger)",name:"Diane Lynch",linkedin:""}],news:"Merged with Kirinari Sep 2025. Former CEO Natalie Forsyth-Stock stepped down. New leadership = partnership window."},
+{name:"Sunnyfield",tier:"large",revenue:"~$61.4M",staff:"1,500+",states:"NSW, ACT",tags:[],priority:false,newCeo:false,overview:"67+ year disability service provider. 2,000 daily services. Won 'Australia's most trusted NDIS provider brand' 2025 (second consecutive year).",why:"Strong brand equity. CEO Andrew Hyland (since Oct 2022) has strong business transformation background.",contacts:[{role:"CEO",name:"Andrew Hyland",linkedin:"https://www.linkedin.com/in/andrewghyland/"}],news:"Won 'Australia's most trusted NDIS service provider brand' 2025 (second year running)."},
+{name:"Hireup",tier:"large",revenue:"N/A (platform)",staff:"12,000+ workers",states:"National",tags:[],priority:false,newCeo:false,overview:"NDIS-registered online platform enabling people with disability to find, hire, and manage their own support workers. SEEK-backed ($40M Series A).",why:"Platform model could be leveraged for aged care worker matching. Already describes itself as serving 'disability and aged care.' SEEK backing provides stability.",contacts:[{role:"Co-CEO / Co-Founder",name:"Jordan O'Reilly OAM",linkedin:"https://www.linkedin.com/in/jordan-o-reilly-oam-a39a5952/"},{role:"Co-CEO / Co-Founder",name:"Laura O'Reilly",linkedin:""}],news:"Targeted in union pay campaign. Platform model gives unique scalability."},
+{name:"Mind Australia",tier:"large",revenue:"N/A",staff:"900+",states:"VIC, SA, QLD, WA",tags:[],priority:false,newCeo:false,overview:"One of Australia's largest community-managed mental health providers. Supports 12,000+ Australians annually across 60+ service sites. Merged with One Door Mental Health 2024.",why:"Mental health focus. Psychosocial disability is growing NDIS cohort. CEO Gill Callister PSM has deep government policy experience. Board chaired by Prof Allan Fels AO.",contacts:[{role:"CEO",name:"Gill Callister PSM",linkedin:""},{role:"CFO / ED Business Services",name:"Jeff Kagan",linkedin:"https://www.linkedin.com/in/jeffkagan/"}],news:"Merged with One Door Mental Health (2024). Stable, government-connected leadership."},
+{name:"Independence Australia Group",tier:"large",revenue:"~$300M+",staff:"760+",states:"VIC, NSW, QLD, SA, WA",tags:[],priority:false,newCeo:false,overview:"Social enterprise providing disability support, health solutions, and community services. Aggressive growth through acquisition.",why:"Acquisition-hungry CEO Peter Turner (20+ years). Completed Possability Group purchase (Sep 2025). Has COO for each division. Expanding nationally.",contacts:[{role:"CEO / MD",name:"Peter Turner",linkedin:""},{role:"COO, Disability",name:"Alex Burstin (interim)",linkedin:""},{role:"Chief Experience Officer",name:"Kate Menzel",linkedin:""}],news:"Completed Possability acquisition Sep 2025. Also merging with AQA. One of the most acquisitive players."},
+{name:"Melbourne City Mission",tier:"large",revenue:"~$105.9M",staff:"359+",states:"VIC",tags:[],priority:false,newCeo:true,overview:"NFP providing homelessness, justice, disability, early years, and palliative care across Victoria.",why:"Provides palliative care alongside disability. New CEO Paul Wappett (2025). Has GM for Disability, ECIS & Palliative Care (Jennifer Boulton) and GM Philanthropy, Partnerships & Brand (Sue Albert).",contacts:[{role:"CEO (new, 2025)",name:"Paul Wappett",linkedin:""},{role:"GM Disability, ECIS & Palliative Care",name:"Jennifer Boulton",linkedin:"https://au.linkedin.com/in/jennifer-boulton-95718b8b"},{role:"GM Philanthropy, Partnerships & Brand",name:"Sue Albert",linkedin:""}],news:"CEO change 2025 — Paul Wappett succeeded Vicki Sutton."},
+{name:"Novita",tier:"large",revenue:"~$131.8M",staff:"1,000+",states:"SA",tags:[],priority:false,newCeo:false,overview:"One of SA's largest community-based disability services. Services and equipment to 4,300+ children, young people, and adults.",why:"Has dedicated Executive Manager for Strategy & Business Development (Nicola Barr) — ideal partnership contact. Expanding from children to adults.",contacts:[{role:"CEO",name:"Greg Ward",linkedin:""},{role:"EM Strategy & Business Development",name:"Nicola Barr",linkedin:""},{role:"COO",name:"Scott McMullen",linkedin:""}],news:"Stable leadership under Greg Ward since Jul 2016."},
+{name:"Ability Options",tier:"large",revenue:"~$81.7M",staff:"1,200+",states:"NSW",tags:[],priority:false,newCeo:false,overview:"NSW-based provider supporting people with disability across 100+ sites. Nearly 50 years old.",why:"CEO Julia Squire has 30+ years public health leadership (UK and AU). Approaching 50th anniversary.",contacts:[{role:"CEO",name:"Julia Squire",linkedin:""}],news:"Approaching 50th anniversary. Stable leadership."},
+{name:"CPL — Choice Passion Life",tier:"large",revenue:"~$73.2M",staff:"402+",states:"QLD, Northern NSW",tags:[],priority:false,newCeo:false,overview:"Brisbane-based, formerly Cerebral Palsy League. Therapy, equipment, accommodation, community support.",why:"QLD/Northern NSW focus. As cerebral palsy clients age, they transition to aged care. Partnership opportunity for this ageing cohort.",contacts:[{role:"CEO",name:"Rhys Kennedy",linkedin:""},{role:"COO",name:"Wendy Lavelle",linkedin:""},{role:"CFO",name:"Leanne Perry",linkedin:""}],news:"Stable. QLD service delivery focus."},
+{name:"Unisson Disability",tier:"large",revenue:"~$54.9M",staff:"500+",states:"NSW (Northern Sydney)",tags:[],priority:false,newCeo:false,overview:"Sydney-based NFP operating across Northern Sydney, Northern Beaches, Hills District. Supported living, community participation.",why:"Sydney-focused. COO Paul Herbert is the operational contact.",contacts:[{role:"CEO",name:"David Kneeshaw",linkedin:""},{role:"COO",name:"Paul Herbert",linkedin:""}],news:"Stable. No distress signals."},
+// DISTRESSED
+{name:"Centacare SE QLD",tier:"distressed",revenue:"N/A",staff:"600 affected",states:"SE QLD",tags:["priority"],priority:true,newCeo:true,overview:"Catholic Church-affiliated. Ceasing ALL NDIS-funded disability services by mid-Nov 2025 after 40 years. Continuing aged care, housing, family services.",why:"CRITICAL — 700 displaced NDIS participants. Centacare is retaining its aged care services while shedding NDIS. Direct referral pipeline opportunity. Contact new CEO Stuart Rodney.",contacts:[{role:"CEO / Executive Director (new, Aug 2025)",name:"Stuart Rodney",linkedin:""}],news:"Independent review found NDIS model financially unsustainable. Retaining aged care."},
+{name:"Annecto",tier:"distressed",revenue:"N/A",staff:"1,000+ (was)",states:"VIC, NSW, QLD, ACT",tags:["priority"],priority:true,newCeo:false,overview:"70-year-old VIC-based aged care AND disability provider. Ceased all operations Jul 2025 after entering voluntary administration. $19M unpaid debts.",why:"HIGH — Served BOTH aged care and disability (4,400+ clients). Many former clients still transitioning. Contact McGrathNicol (administrators) for client lists.",contacts:[{role:"Administrators",name:"McGrathNicol",linkedin:""}],news:"$19M debt incl. $11.4M employee entitlements. Proceeded to liquidation."},
+{name:"McLean Care",tier:"distressed",revenue:"N/A",staff:"N/A",states:"Regional NSW/QLD",tags:["priority"],priority:true,newCeo:false,overview:"Regional aged care provider — 370 residential beds, 6 facilities (Inverell, Guyra, Gunnedah NSW; Oakey, Millmerran QLD). 82 ILUs, home care.",why:"HIGH FOR ACQUISITION — Seeking buyer for entire operation. Regional aged care bed stock. CEO departed. Contact financial advisers leading the sale.",contacts:[{role:"Interim CEO",name:"Jill Davidson",linkedin:""}],news:"CEO Sue Thomson departed. Seeking buyer 'aligned to mission-led ethos'."},
+{name:"Anglicare WA",tier:"distressed",revenue:"N/A",staff:"N/A",states:"WA (regional)",tags:[],priority:false,newCeo:false,overview:"Exited NDIS entirely after four consecutive years of operating losses in disability. Closed regional/outer metro offices.",why:"Displaced NDIS participants in regional WA need new providers. Their exit from disability frees focus on remaining services.",contacts:[{role:"CEO",name:"Mark Glasson",linkedin:"https://www.linkedin.com/in/mark-glasson-2012b890/"}],news:"Four consecutive years of NDIS losses. Called on Commonwealth to accelerate reforms."},
+// MID-TIER
+{name:"Kinder Caring",tier:"mid",revenue:"~$15-40M est.",staff:"200+ est.",states:"NSW, VIC, QLD",tags:["dual","priority"],priority:true,newCeo:false,overview:"Family-owned, ACIS-certified. Founded by RN Pam Blake in 1998. 25+ years providing aged care, NDIS, attendant care, complex nursing, palliative care. Nurse-led clinical model.",why:"HIGHEST VALUE MID-TIER. Multi-state in all three of Trilogy's key markets. Nurse-led clinical model aligns with complex aged care. Already dual-sector. CEO Adam Blake has finance background (UBS, Elliott Advisors) — will respond to commercial proposition.",contacts:[{role:"CEO",name:"Adam Blake",linkedin:"https://au.linkedin.com/in/adam-blake"},{role:"Founder (RN)",name:"Pam Blake",linkedin:"https://www.linkedin.com/in/pamela-blake-85246164/"}],news:"25+ years operating. Second-generation family leadership."},
+{name:"Absolute Care & Health",tier:"mid",revenue:"~$10-25M est.",staff:"N/A",states:"VIC",tags:["dual","priority"],priority:true,newCeo:false,overview:"Premier provider of in-home aged care, NDIS disability, recovery care, and nursing in Melbourne. 10+ years. Dual NDIS + My Aged Care accredited.",why:"HIGH VALUE. Genuine dual-sector operator. CEO Barbara Ould has CPA and turnaround/transformation background (Vantage Performance). Commercially sophisticated — will understand the business case immediately.",contacts:[{role:"CEO (since 2013)",name:"Barbara Ould",linkedin:""},{role:"External Relations Director",name:"Madryn Sanderson",linkedin:""},{role:"Dir Clinical Service Innovation",name:"Natalie de Vos",linkedin:""}],news:"10+ years operating. Dual accreditation (NDIS + My Aged Care)."},
+{name:"Continuity Care Australia",tier:"mid",revenue:"~$5-15M est.",staff:"N/A",states:"QLD",tags:["dual","priority"],priority:true,newCeo:false,overview:"NDIS registered AND My Aged Care approved. Mango Hill, QLD. 'Complete Care Coordination' model. Already helping clients navigate Support at Home.",why:"HIGH VALUE. Dual-sector in QLD (Trilogy market). Already navigating Support at Home. Operational maturity with coordination model.",contacts:[{role:"Managing Director",name:"Suraj Kandel",linkedin:""}],news:"Actively transitioning clients to Support at Home. QLD market alignment."},
+{name:"AusCare Home & Community Care",tier:"mid",revenue:"~$10-30M est.",staff:"N/A",states:"NSW, QLD, VIC",tags:["dual","priority"],priority:true,newCeo:false,overview:"National community services org. NDIS registered AND national Aged Care approved HCP provider. 24/7 care across Sydney, Gold Coast, Brisbane, Melbourne. Expanding to TAS, ACT, NT.",why:"HIGH VALUE. True dual-sector national operator in Trilogy's key markets. Actively expanding into new states. Growth trajectory suggests ambition but likely resource constraints.",contacts:[{role:"Contact",name:"Erica",linkedin:""}],news:"Actively expanding. Multi-state dual-sector operations."},
+{name:"Auscare Support Coordination",tier:"mid",revenue:"N/A",staff:"N/A",states:"National",tags:[],priority:false,newCeo:false,overview:"Australia's first B-Corp certified NDIS provider (B Impact score: 93.5). Founded 2017. 2,500+ participants nationally. Support coordination, recovery coaching, plan management.",why:"MEDIUM-HIGH for referral channel. 2,500+ participants nationally, many may be ageing. B-Corp values alignment. SC influence over provider choice = preferred provider status.",contacts:[{role:"CEO",name:"Max King",linkedin:""}],news:"B-Corp certified. Rapid growth since 2017."},
+{name:"Carer's Network Australia",tier:"mid",revenue:"N/A",staff:"N/A",states:"VIC",tags:["dual"],priority:false,newCeo:false,overview:"NDIS, My Aged Care, TAC, DVA, and WorkSafe approved. Operating since 2017. Melbourne metro and regional VIC (Ballarat, Bendigo).",why:"True dual-sector in VIC with 5+ funding streams (NDIS, My Aged Care, TAC, DVA, WorkSafe). Multiple streams suggests operational maturity.",contacts:[{role:"CEO",name:"Susan Hill",linkedin:""}],news:"84% employee approval rating."},
+{name:"Plan Partners (MMSG)",tier:"mid",revenue:"~$30M+ est.",staff:"N/A",states:"National",tags:[],priority:false,newCeo:false,overview:"National NDIS plan management. Owned by ASX-listed McMillan Shakespeare. Five offices. Acquired My Plan Support (May 2025).",why:"Corporate-owned but controls massive referral flow as plan managers. Channel partner (referral arrangement) opportunity.",contacts:[{role:"CEO",name:"Verity Gilpin",linkedin:""}],news:"Acquired My Plan Support May 2025. Corporate parent MMSG."},
+{name:"MOIRA Limited",tier:"mid",revenue:"~$10-20M est.",staff:"N/A",states:"VIC",tags:[],priority:false,newCeo:false,overview:"Registered charity, 60+ years. Youth services, NDIS plan management, disability, OT, allied health, chronic illness. Scoresby, VIC.",why:"Long-established VIC charity with plan management capability. Their ageing plan management clients = referral channel.",contacts:[{role:"CEO",name:"Tony Sweeney",linkedin:""}],news:"60+ year track record."},
+{name:"HomeAid Services",tier:"mid",revenue:"<$5M est.",staff:"Small",states:"SA",tags:["dual"],priority:false,newCeo:false,overview:"Family-run NDIS and aged care provider in Adelaide. Personal care, nursing, cleaning, support coordination, complex care.",why:"Genuine dual-sector in SA. Family businesses often open to partnerships that bring scale. SA under severe pressure (Bedford, MS Society collapses).",contacts:[],news:"SA market under acute stress."},
+{name:"Home Care Experts",tier:"mid",revenue:"~$5-15M est.",staff:"N/A",states:"VIC",tags:[],priority:false,newCeo:false,overview:"Registered NDIS provider, Greater Melbourne and regional VIC. 20+ years. Team includes registered nurses, endorsed nurses. Complex nursing, SIL, hospital discharge.",why:"Nurse-founded, complex care capability in VIC. 20+ years experience. VIC is key Trilogy market.",contacts:[],news:"20+ years experience. Melbourne + regional VIC."},
+{name:"Litara Care",tier:"mid",revenue:"N/A",staff:"N/A",states:"QLD",tags:[],priority:false,newCeo:false,overview:"QLD-based NDIS provider. SIL, STA, ILO, complex care, community participation. Trauma-informed. May be part of Access Care group.",why:"QLD presence. SIL/complex care capability. If part of Access Care group, there may be more scale behind the brand.",contacts:[],news:"QLD-based. Part of Access Care group (potentially)."},
+{name:"nib Thrive (All Disability PM)",tier:"mid",revenue:"N/A (corporate)",staff:"N/A",states:"National",tags:[],priority:false,newCeo:false,overview:"nib (ASX-listed health insurer) acquired All Disability Plan Management May 2023. Fourth plan manager in nib's Thrive NDIS portfolio.",why:"Corporate referral channel. nib Thrive manages multiple PM brands with huge client flow. High-value but corporate sales cycle.",contacts:[{role:"CEO, nib Thrive",name:"Martin Adlington",linkedin:""}],news:"nib expanding NDIS plan management portfolio."},
+// SMALL SC
+{name:"CoAbility",tier:"small",revenue:"N/A",staff:"~40 SC experts",states:"VIC (national reach)",tags:["priority"],priority:true,newCeo:false,overview:"One of the largest independent SC businesses. Survived the 2024 NDIS storm. SC thought leader. Published 'Still Standing: How CoAbility Weathered the NDIS Storm of 2024'.",why:"~40 SC experts. Survived when others failed. Founder Jenine Ellis is a sector voice. Converting CoAbility = signal to the market.",contacts:[{role:"Founder/Director",name:"Jenine Ellis",linkedin:"https://www.linkedin.com/in/jenine-ellis/"}],news:"Published survival story. Sector thought leader."},
+{name:"Future Focus SC",tier:"small",revenue:"N/A",staff:"Medium",states:"VIC, WA",tags:["priority"],priority:true,newCeo:false,overview:"One of 2 largest NDIS coordinators nationally. VIC metro + regional, WA (Perth). Luke's primary target.",why:"One of the biggest SC-only businesses. Luke has already held meetings. Primary conversion target.",contacts:[],news:"Luke's primary target. Meeting held."},
+{name:"Anchor Point",tier:"small",revenue:"N/A",staff:"N/A",states:"N/A",tags:["priority"],priority:true,newCeo:false,overview:"One of 2 largest NDIS coordinators nationally. Met with Luke's colleague in Sydney Feb 2026.",why:"Materials already presented Feb 2026. Second-largest SC operation. Active prospect.",contacts:[],news:"Materials presented Feb 2026."},
+{name:"Connect4U Australia",tier:"small",revenue:"N/A",staff:"15-20",states:"National",tags:[],priority:false,newCeo:false,overview:"National SC provider. 600+ clients since 2019.",why:"National reach with 600+ clients. Growth trajectory since 2019.",contacts:[{role:"Founder",name:"Andrew",linkedin:""}],news:"Growing since 2019."},
+{name:"Lotus Assist",tier:"small",revenue:"N/A",staff:"Small",states:"NSW, QLD",tags:[],priority:false,newCeo:false,overview:"SC provider in Central Coast, Newcastle, Hunter, Gold Coast, Brisbane. Co-founded by Nicole O'Neill & Helen Marquez.",why:"NSW/QLD presence in Trilogy's key markets. Dual-founder business may be more receptive to partnership.",contacts:[{role:"Co-Director",name:"Nicole O'Neill",linkedin:"https://www.linkedin.com/in/nicole-o-neill-93473618/"},{role:"Co-Director",name:"Helen Marquez",linkedin:"https://www.linkedin.com/in/helen-marquez-59311852/"}],news:"Operating in Trilogy's key geographic markets."},
+{name:"Marli & Moe",tier:"small",revenue:"N/A",staff:"Small-Medium",states:"NSW, SA, QLD",tags:[],priority:false,newCeo:false,overview:"SC provider based in Harris Park NSW, also Adelaide and Brisbane.",why:"Multi-state presence. NSW/SA/QLD coverage.",contacts:[{role:"Director",name:"Jemma Grunsell-Kerr",linkedin:""}],news:"Multi-state SC operations."},
+{name:"Sunflower Services",tier:"small",revenue:"N/A",staff:"Small-Medium",states:"NSW, SA, QLD",tags:[],priority:false,newCeo:false,overview:"SC provider in Newcastle, Adelaide, Gold Coast. Female-founded. CEO Kimberley Perks.",why:"NSW/SA/QLD — multi-state in Trilogy markets.",contacts:[{role:"CEO",name:"Kimberley Perks",linkedin:"https://www.linkedin.com/in/kimberley-perks-546680249/"}],news:"Female-founded. Multi-state."},
+{name:"Ark Support Coordination",tier:"small",revenue:"N/A",staff:"Small-Medium",states:"WA",tags:[],priority:false,newCeo:false,overview:"WA (Perth, South-West, Broome, Kununurra). Founded by Haydn Busher.",why:"WA coverage including remote areas.",contacts:[{role:"Founder/Director",name:"Haydn Busher",linkedin:""}],news:"Regional WA including remote areas."},
+{name:"Adelaide SSC",tier:"small",revenue:"N/A",staff:"Small",states:"SA",tags:[],priority:false,newCeo:false,overview:"Adelaide Specialist Support Coordinators. SA-based.",why:"SA market under pressure — may be receptive.",contacts:[{role:"Founder",name:"Sia",linkedin:""}],news:"SA market."},
+{name:"Connect Support Group",tier:"small",revenue:"N/A",staff:"~100",states:"VIC, NSW",tags:[],priority:false,newCeo:false,overview:"VIC metro + regional, NSW. ~100 staff. Est. 2017. Founded by Agnes.",why:"100 staff is significant for an SC business. VIC/NSW presence.",contacts:[{role:"Founder",name:"Agnes",linkedin:""}],news:"~100 staff. Growing since 2017."},
+{name:"Empower Choice",tier:"small",revenue:"N/A",staff:"Small-Medium",states:"QLD + 7 states",tags:[],priority:false,newCeo:false,overview:"Brisbane, Ipswich, Logan, Toowoomba + national reach. Owner Kim Webster.",why:"QLD-based with national reach. Toowoomba presence interesting given McLean Care wind-down in that region.",contacts:[{role:"Owner/Director",name:"Kim Webster",linkedin:"https://www.linkedin.com/in/kim-webster-0a706910a/"}],news:"QLD-based. Toowoomba presence."},
+{name:"Safe Solutions Care",tier:"small",revenue:"N/A",staff:"Small",states:"VIC (Geelong)",tags:[],priority:false,newCeo:false,overview:"VIC — Geelong/Bellarine/Colac. Founded by Sue (RN). Nurse-led SC.",why:"Nurse-founded. Geelong/regional VIC.",contacts:[{role:"Founder (RN)",name:"Sue",linkedin:""}],news:"Nurse-led. Regional VIC."},
+{name:"Brightify SC",tier:"small",revenue:"N/A",staff:"Small",states:"QLD (Sunshine Coast)",tags:[],priority:false,newCeo:false,overview:"Sunshine Coast QLD. Co-founded by Cindy Mulraney.",why:"QLD Sunshine Coast.",contacts:[{role:"Co-Founder/Director",name:"Cindy Mulraney",linkedin:"https://www.linkedin.com/in/silvacindy/"}],news:"Sunshine Coast."},
+{name:"Blue Wing Care Professionals",tier:"small",revenue:"N/A",staff:"Small-Medium",states:"QLD, NSW",tags:[],priority:false,newCeo:false,overview:"QLD/NSW. Est. 2018. Founded by Zoe Norton (Chief Visionary Officer).",why:"QLD/NSW presence. Operating since 2018.",contacts:[{role:"Founder/CVO",name:"Zoe Norton",linkedin:""}],news:"Operating since 2018."},
+{name:"DSX (via Andrew Wallace)",tier:"small",revenue:"N/A",staff:"220+ coordinators",states:"National",tags:["priority"],priority:true,newCeo:false,overview:"Board-level access via Andrew Wallace. Network of 220+ individual coordinators (100+ different SC businesses, all small).",why:"Strategic intel partner + referral network. Andrew Wallace provides Commission raw data and SC financial modelling. Gateway to 220+ coordinators.",contacts:[{role:"Board Member",name:"Andrew Wallace",linkedin:""}],news:"Key strategic relationship. Provides sector intelligence."}
+];
+
+// === RENDER PROVIDERS ===
+function renderProviders(filter='all',tag='',search=''){
+const list=document.getElementById('providerList');
+let filtered=providers.filter(p=>{
+if(filter!=='all'&&p.tier!==filter)return false;
+if(tag==='dual'&&!p.tags.includes('dual'))return false;
+if(tag==='new-ceo'&&!p.newCeo)return false;
+if(tag==='priority'&&!p.priority)return false;
+if(search){const s=search.toLowerCase();const hay=(p.name+' '+p.states+' '+p.overview+' '+(p.contacts||[]).map(c=>c.name).join(' ')).toLowerCase();if(!hay.includes(s))return false;}
+return true;
+});
+// Sort: priority first, then by tier order
+const tierOrder={distressed:0,large:1,mid:2,small:3};
+filtered.sort((a,b)=>{if(a.priority&&!b.priority)return -1;if(!a.priority&&b.priority)return 1;return(tierOrder[a.tier]||9)-(tierOrder[b.tier]||9)});
+list.innerHTML=`<div style="color:var(--text3);font-size:12px;margin-bottom:12px">${filtered.length} providers</div>`+filtered.map(p=>{
+const tierClass={large:'tier-large',mid:'tier-mid',small:'tier-small',distressed:'tier-distressed'}[p.tier]||'tier-mid';
+const badgeClass={large:'b-large',mid:'b-mid',small:'b-small',distressed:'b-distressed'}[p.tier]||'b-mid';
+const tierLabel={large:'Large ($50M+)',mid:'Mid-Tier',small:'Small SC',distressed:'Distressed'}[p.tier]||p.tier;
+let badges=`<span class="badge ${badgeClass}">${tierLabel}</span>`;
+if(p.tags.includes('dual'))badges+=`<span class="badge b-dual">Dual Sector</span>`;
+if(p.newCeo)badges+=`<span class="badge b-new-ceo">New CEO</span>`;
+if(p.priority)badges+=`<span class="badge b-priority">Priority</span>`;
+let contactsHTML='';
+if(p.contacts&&p.contacts.length){contactsHTML=`<table class="contact-table"><thead><tr><th>Role</th><th>Name</th><th>LinkedIn</th></tr></thead><tbody>`+p.contacts.map(c=>`<tr><td>${c.role}</td><td>${c.name}</td><td>${c.linkedin?`<a class="linkedin-link" href="${c.linkedin}" target="_blank">View Profile</a>`:'<span style="color:var(--text3)">Search LinkedIn</span>'}</td></tr>`).join('')+`</tbody></table>`;}
+return `<div class="provider-card" onclick="this.classList.toggle('open')">
+<div class="pc-head"><div class="pc-tier ${tierClass}"></div><div class="pc-info"><div class="pc-name">${p.name}</div><div class="pc-sub">${p.states} · ${p.revenue||'N/A'} rev · ${p.staff||'N/A'} staff</div></div><div class="pc-badges">${badges}</div><div class="pc-arrow">▶</div></div>
+<div class="pc-body">
+<div class="pc-overview">${p.overview}</div>
+<div class="why-box"><p><strong>Why contact:</strong> ${p.why}</p></div>
+${p.contacts&&p.contacts.length?`<div class="pc-section"><h4>Key Decision Makers</h4>${contactsHTML}</div>`:''}
+${p.news?`<div class="pc-section"><h4>Recent News / Intel</h4><div class="news-item">${p.news}</div></div>`:''}
+</div></div>`;
+}).join('');
+}
+
+// === FILTER HANDLERS ===
+let activeFilter='all',activeTag='',activeSearch='';
+document.querySelectorAll('#tierFilter .fbtn').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('#tierFilter .fbtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeFilter=b.dataset.filter;renderProviders(activeFilter,activeTag,activeSearch)})});
+document.querySelectorAll('#tagFilter .fbtn').forEach(b=>{b.addEventListener('click',()=>{if(b.classList.contains('active')){b.classList.remove('active');activeTag=''}else{document.querySelectorAll('#tagFilter .fbtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeTag=b.dataset.tag}renderProviders(activeFilter,activeTag,activeSearch)})});
+document.getElementById('providerSearch').addEventListener('input',e=>{activeSearch=e.target.value;renderProviders(activeFilter,activeTag,activeSearch)});
+
+// Init
+renderProviders();
+</script>
+</body>
+</html>
